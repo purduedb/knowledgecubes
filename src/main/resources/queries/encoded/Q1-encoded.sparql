@@ -1,0 +1,7 @@
+SELECT ?s ?y ?z ?w WHERE {
+	?s <4> ?z .
+	?s <6> ?w .
+	?s <7> ?y .
+	?s <3> <17> .
+}
+#EOQ#

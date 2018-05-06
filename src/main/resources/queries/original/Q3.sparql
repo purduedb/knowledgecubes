@@ -1,0 +1,8 @@
+PREFIX twt: <http://twitter.com/resources/>
+
+SELECT ?p ?o
+WHERE
+{
+    twt:John ?p ?o .
+    twt:John twt:friends ?o .
+}

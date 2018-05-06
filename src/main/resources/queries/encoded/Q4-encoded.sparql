@@ -1,0 +1,4 @@
+SELECT ?x WHERE {
+	?x <3> ?x .
+}
+#EOQ#

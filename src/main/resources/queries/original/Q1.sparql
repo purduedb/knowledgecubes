@@ -1,0 +1,9 @@
+PREFIX twt: <http://twitter.com/resources/>
+
+ SELECT ?s ?y ?z ?w
+ WHERE {
+     ?s twt:tweet ?z .
+     ?s twt:friends ?w .
+     ?s twt:likes ?y .
+     ?s twt:mention twt:Mary .
+ }

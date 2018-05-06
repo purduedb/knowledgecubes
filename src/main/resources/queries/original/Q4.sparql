@@ -1,0 +1,6 @@
+PREFIX twt: <http://twitter.com/resources/>
+
+SELECT ?x
+WHERE {
+    ?x twt:mention ?x .
+}

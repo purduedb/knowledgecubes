@@ -1,0 +1,5 @@
+SELECT ?p ?o WHERE {
+	<16> ?p ?o .
+	<16> <6> ?o .
+}
+#EOQ#

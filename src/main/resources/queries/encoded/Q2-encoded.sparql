@@ -1,0 +1,5 @@
+SELECT ?x ?y WHERE {
+	?x <3> ?y .
+	?x <6> ?y .
+}
+#EOQ#

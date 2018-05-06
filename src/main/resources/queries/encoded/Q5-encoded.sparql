@@ -1,0 +1,4 @@
+SELECT ?p ?s WHERE {
+	?s ?p ?s .
+}
+#EOQ#
