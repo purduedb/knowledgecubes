@@ -58,27 +58,35 @@ val filterType = GEFIType.ROARING // Roaring bitmap
 val falsePositiveRate = 0
 
 val queryProcessor = QueryProcessor(spark, dbPath, localPath, filterType, falsePositiveRate)
+
+val query =
+  """
+    SELECT ?GivenName ?FamilyName WHERE{
+        ?p <http://yago-knowledge.org/resource/hasGivenName> ?GivenName . 
+        ?p <http://yago-knowledge.org/resource/hasFamilyName> ?FamilyName . 
+        ?p <http://yago-knowledge.org/resource/wasBornIn> ?city . 
+        ?p <http://yago-knowledge.org/resource/hasAcademicAdvisor> ?a .
+        ?a <http://yago-knowledge.org/resource/wasBornIn> ?city .
+    }
+  """.stripMargin
+
+// Returns a Spark DataFrame containing the results
+val r = queryProcessor.sparql(query)
+
 ```
 
+### Upcoming Support
 
-### Planned Features
-
-* Spatial queries support
+* Spatiotemporal queries
     * **Example:** Range, Distance Join
-* Temporal queries support
-* Perform matrix-based operations over RDF data
+* Matrix-based operations over RDF data
     * Process graph algorithms
         * **Example:** Page Rank
     * Process natural language queries
         * **Example:** Similarity, Relatedness
-* Issue RDF queries via web-based UI
+* Web-based UI querying
     * **Example:** Send SPARQL queries to spark, view spatial results
     
-### Wish List
-
-* Cache eviction algorithms (e.g., LFU,MRU etc.)
-* Data Partition algorithms (e.g., Adaptive)
-
 ### Publications
 
 * Amgad Madkour, Walid G. Aref, Saleh Basalamah, “Knowledge Cubes - A Proposal for Scalable and Semantically-Guided Management of Big Data”, IEEE BigData 2013
