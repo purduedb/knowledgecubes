@@ -175,23 +175,23 @@ class Executor(catalog: Catalog) {
           // Current Policy: Load reduction based on its size | Alternatily: Prefer subject
           if (catalog.joinReductionsInfo(queryFilters("s")) < catalog.joinReductionsInfo(queryFilters("o"))) {
             table = catalog.spark.read.parquet(catalog.joinReductionsPath + queryFilters("s")).as[RDFTriple]
-            numTuples = catalog.joinReductionsInfo(queryFilters("s"))
+            numTuples = table.count()
           } else {
             table = catalog.spark.read.parquet(catalog.joinReductionsPath + queryFilters("o")).as[RDFTriple]
-            numTuples = catalog.joinReductionsInfo(queryFilters("o"))
+            numTuples = table.count()
           }
           isReductionWarm = true
         } else if (queryFilters.keySet.contains("s") &&
           catalog.joinReductionsInfo.contains(queryFilters("s")) &&
           catalog.joinReductionsInfo(queryFilters("s")) > 0) {
           table = catalog.spark.read.parquet(catalog.joinReductionsPath + queryFilters("s")).as[RDFTriple]
-          numTuples = catalog.joinReductionsInfo(queryFilters("s"))
+          numTuples = table.count()
           isReductionWarm = true
         } else if (queryFilters.keySet.contains("o") &&
           catalog.joinReductionsInfo.contains(queryFilters("o")) &&
           catalog.joinReductionsInfo(queryFilters("o")) > 0) {
           table = catalog.spark.read.parquet(catalog.joinReductionsPath + queryFilters("o")).as[RDFTriple]
-          numTuples = catalog.joinReductionsInfo(queryFilters("o"))
+          numTuples = table.count()
           isReductionWarm = true
         } else {
           if (!CacheManager.contains(propName)) {
