@@ -3,7 +3,6 @@ package edu.purdue.knowledgecubes.storage.persistent
 import scala.collection.mutable.Map
 
 import com.typesafe.scalalogging.Logger
-import org.apache.commons.lang.RandomStringUtils
 import org.apache.jena.riot.Lang
 import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
 import org.apache.spark.sql.functions.col

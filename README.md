@@ -2,7 +2,7 @@
 
 ## About
 
-Cloud-based systems can be used to manage web-scale RDF data. However, operations that involve complex joins introduce several performance challenges, e.g., communication and computation overhead. To alleviate these challenges, Knowledge Cubes, an RDF system that filters non-matching intermediate results during join evaluation as early as possible to reduce the communication and computation overhead. Knowledge Cubes uses a filter-based approach to generate reduced sets of triples (or reductions, for short) to represent join pattern(s) of query workloads. Knowledge Cubes can materialize the reductions on disk or in memory and reuses the reductions that share the same join pattern(s) to answer queries. Furthermore, these reductions are not computed beforehand, but are rather computed in an online fashion. Knowledge Cubes also answer complex analytical queries that involve unbound properties. Based on a realization of Knowledge Cubes on top of Spark, extensive experimentation demonstrates an order of magnitude enhancement in terms of preprocessing, storage, and query performance compared to the state-of-the-art cloud-based solutions.
+Cloud-based systems can be used to manage web-scale RDF data. However, operations that involve complex joins introduce several performance challenges, e.g., communication and computation overhead. To alleviate these challenges, we propose Knowledge Cubes or KC for short, an RDF system that filters non-matching intermediate results during join evaluation as early as possible to reduce the communication and computation overhead. KC uses a filter-based approach to generate reduced sets of triples (or reductions, for short) to represent join pattern(s) of query workloads. KC can materialize the reductions on disk or in memory and reuses the reductions that share the same join pattern(s) to answer queries. Furthermore, these reductions are not computed beforehand, but are rather computed in an online fashion. KC also answer complex analytical queries that involve unbound properties. Based on a realization of KC on top of Spark, extensive experimentation demonstrates an order of magnitude enhancement in terms of preprocessing, storage, and query performance compared to the state-of-the-art cloud-based solutions.
 
 ## Features
 
@@ -13,11 +13,11 @@ Cloud-based systems can be used to manage web-scale RDF data. However, operation
 
 ## Usage
 
-Knowledge Cubes provide spark-based API for issuing RDF related operations.
+KC provide spark-based API for issuing RDF related operations.
 
 #### Creating an RDF Store
 
-Knowledge Cubes provide the Store class for creation of an RDF store. The input to the store is a spark session, database path where the RDF dataset will be stores, and a local configuration path
+KC provide the Store class for creation of an RDF store. The input to the store is a spark session, database path where the RDF dataset will be stores, and a local configuration path
 
 ```scala
 import org.apache.spark.sql.SparkSession
@@ -38,9 +38,17 @@ val store = Store(spark, dbPath, localPath)
 store.create(ntPath)
 ```
 
+#### Constructing Filters
+
+KC provides exact and approximate structures for filtering data. Currently KC supports GEFIType.BLOOM, GEFIType.ROARING, and GEFIType.BITSET.
+
+```scala
+
+```
+
 #### SPARQL Querying
 
-Knowledge Cubes provides a SPARQL query processor that takes as input the spark session, database path of where the RDF dataset was created, local configuration file path, a filter type, and a false postivie rate (if any).
+KC provides a SPARQL query processor that takes as input the spark session, database path of where the RDF dataset was created, local configuration file path, a filter type, and a false postivie rate (if any).
 
 ```scala
 import org.apache.spark.sql.SparkSession
@@ -75,7 +83,7 @@ val r = queryProcessor.sparql(query)
 
 ```
 
-### Upcoming Support
+### Upcoming Features
 
 * Spatiotemporal queries
     * **Example:** Range, Distance Join

@@ -58,7 +58,7 @@ object GEFIJoinUtils {
                    filterName: String,
                    path: String): Unit = {
     try {
-      val fullPath = path + "GEFI/join/" + filterType.toString + "/" + falsePositiveRate.toString
+      val fullPath = path + "/GEFI/join/" + filterType.toString + "/" + falsePositiveRate.toString
       val directory = new File(fullPath)
       if (!directory.exists) directory.mkdirs()
       val fout = new FileOutputStream(fullPath + "/" + filterName)

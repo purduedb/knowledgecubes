@@ -16,11 +16,10 @@ object FilterCLI {
     val params = CliParser.parseFilter(args)
     val spark = SparkSession.builder
       .appName(s"Knowledge Cubes Filters Creator")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
       .getOrCreate()
 
     val dbPath = params("db")
-    val localDBPath = params("local")
+    val localPath = params("local")
     val fp = params("fp").toDouble
     val ftype = params("ftype")
 
@@ -35,10 +34,11 @@ object FilterCLI {
 
     LOG.info(s"GEFI: $filterType")
 
-    val filter = new GEFIJoinCreator(spark, dbPath, localDBPath)
+    val filter = new GEFIJoinCreator(spark, dbPath, localPath)
     val time = Timer.timeInSeconds{filter.create(filterType, fp)}
     LOG.info(s"Time: $time seconds")
     LOG.info(s"Filters created Successfully")
+    spark.sqlContext.clearCache()
     spark.stop
   }
 }

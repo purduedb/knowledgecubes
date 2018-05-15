@@ -16,14 +16,14 @@ class Catalog(val localPath: String, val dbPath: String, val spark: SparkSession
 
   val LOG: Logger = LoggerFactory.getLogger(classOf[Catalog])
 
-  val dataPath = dbPath + "/data/"
-  val joinReductionsPath = dbPath + "/reductions/join/"
+  val dataPath: String = dbPath + "/data/"
+  val joinReductionsPath: String = dbPath + "/reductions/join/"
   var dbInfo: Map[String, String] = Map[String, String]()
   var tablesInfo: Map[String, Map[String, String]] = Map[String, Map[String, String]]()
   var joinReductionsInfo: Map[String, Long] = Map[String, Long]()
   var joinFilters: Map[String, Map[String, GEFI]] = Map[String, Map[String, GEFI]]()
   var broadcastFilters: Broadcast[Map[String, Map[String, GEFI]]] = _
-  var filterType = GEFIType.NONE
+  var filterType: GEFIType.Value = GEFIType.NONE
 
   def loadConfigurations(): Unit = {
     val dbFile = Source.fromFile(localPath + "/dbinfo.yaml")
@@ -61,11 +61,11 @@ class Catalog(val localPath: String, val dbPath: String, val spark: SparkSession
         directory.mkdirs()
       }
       new PrintWriter(localPath +
-                      "dbinfo.yaml") { write(dbInfo.toYaml.print(flowStyle = Flow)); close }
+                      "/dbinfo.yaml") { write(dbInfo.toYaml.print(flowStyle = Flow)); close() }
       new PrintWriter(localPath +
-                      "tables.yaml") { write(tablesInfo.values.toYaml.print(flowStyle = Block)); close }
+                      "/tables.yaml") { write(tablesInfo.values.toYaml.print(flowStyle = Block)); close() }
       new PrintWriter(localPath +
-                      "join-reductions.yaml") { write(joinReductionsInfo.toYaml.print(flowStyle = Flow)); close }
+                      "/join-reductions.yaml") { write(joinReductionsInfo.toYaml.print(flowStyle = Flow)); close() }
     } catch {
       case exp: IOException =>
         exp.printStackTrace()

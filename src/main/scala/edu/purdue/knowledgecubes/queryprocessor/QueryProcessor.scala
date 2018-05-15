@@ -55,7 +55,7 @@ class QueryProcessor(spark: SparkSession,
 
   private def loadJoinFilters(filterType: GEFIType.Value,
                               falsePositiveRate: Double): Option[Map[String, Map[String, GEFI]]] = {
-    val fullPath = catalog.localPath + "GEFI/join/" + filterType.toString + "/" + falsePositiveRate.toString
+    val fullPath = catalog.localPath + "/GEFI/join/" + filterType.toString + "/" + falsePositiveRate.toString
     val folder = new File(fullPath)
     val listOfFiles = folder.listFiles
     LOG.debug("Loading " + listOfFiles.length + " GEFI")

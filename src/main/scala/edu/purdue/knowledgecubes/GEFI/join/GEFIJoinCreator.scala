@@ -31,7 +31,7 @@ class GEFIJoinCreator(spark: SparkSession, dbPath: String, localPath: String) {
 
     for ((uri, fileName) <- fileNames) {
       count += 1
-      val data = spark.read.parquet(s"$dbPath/$fileName")
+      val data = spark.read.parquet(catalog.dataPath + fileName)
       data.cache()
       val subData = data.select(col("s")).distinct()
       val uniqSub = subData.count()
