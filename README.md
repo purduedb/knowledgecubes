@@ -43,7 +43,18 @@ store.create(ntPath)
 KC provides exact and approximate structures for filtering data. Currently KC supports GEFIType.BLOOM, GEFIType.ROARING, and GEFIType.BITSET.
 
 ```scala
+import org.apache.spark.sql.SparkSession
 
+import edu.purdue.knowledgecubes.GEFI.GEFIType
+import edu.purdue.knowledgecubes.GEFI.join.GEFIJoinCreator
+import edu.purdue.knowledgecubes.utils.Timer
+
+val spark = SparkSession.builder
+            .appName(s"KnowledgeCubes Filter Creator")
+            .getOrCreate()
+            
+var localPath = "/home/amadkour/projects/knowledgecubes/output/bio2rdf/"
+var dbPath = "hdfs://bigdata1-vm1:8020/user/amadkour/bio2rdf-db/"
 ```
 
 #### SPARQL Querying
