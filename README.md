@@ -108,6 +108,8 @@ val r = queryProcessor.sparql(query)
     
 ### Publications
 
+* Amgad Madkour, Ahmed M. Aly, Walid G. Aref, "WORQ: Workload-Driven RDF Query Processing", ISWC 2018 \[To Appear\]
+
 * Amgad Madkour, Walid G. Aref, Saleh Basalamah, “Knowledge Cubes - A Proposal for Scalable and Semantically-Guided Management of Big Data”, IEEE BigData 2013
 
 * Amgad Madkour, Walid G. Aref, Ahmed M. Aly, “SPARTI: Scalable RDF Data Management Using Query-Centric Semantic Partitioning”, Semantic Big Data (SBD18)
