@@ -2,7 +2,11 @@
 
 ## About
 
-Cloud-based systems can be used to manage web-scale RDF data. However, operations that involve complex joins introduce several performance challenges, e.g., communication and computation overhead. To alleviate these challenges, we propose Knowledge Cubes or KC for short, an RDF system that filters non-matching intermediate results during join evaluation as early as possible to reduce the communication and computation overhead. KC uses a filter-based approach to generate reduced sets of triples (or reductions, for short) to represent join pattern(s) of query workloads. KC can materialize the reductions on disk or in memory and reuses the reductions that share the same join pattern(s) to answer queries. Furthermore, these reductions are not computed beforehand, but are rather computed in an online fashion. KC also answer complex analytical queries that involve unbound properties. Based on a realization of KC on top of Spark, extensive experimentation demonstrates an order of magnitude enhancement in terms of preprocessing, storage, and query performance compared to the state-of-the-art cloud-based solutions.
+A Knowledge Cube, or KC for short, is a semantically-guided data management architecture, where data management is influenced by the data semantics rather than by a predefined scheme. Knowledge cubes support the five pillars of Big Data also known as the five V's, namely Volume, Velocity, Veracity, Variety, and Value. Interesting opportunities can be leveraged when learning the semantics of the data. 
+
+#### WORQ: Workload-Driven RDF Query Processing
+
+KC uses a workload-driven RDF query processing technique, or WORQ for short, for filtering non-matching entries during join evaluation as early as possible to reduce the communication and computation overhead. WORQ generates a reduced sets of triples (or reductions, for short) to represent join pattern(s) of query workloads. WORQ can materialize the reductions on disk or in memory and reuses the reductions that share the same join pattern(s) to answer queries. Furthermore, these reductions are not computed beforehand, but are rather computed in an online fashion. KC also answer complex analytical queries that involve unbound properties. Based on a realization of KC on top of Spark, extensive experimentation demonstrates an order of magnitude enhancement in terms of preprocessing, storage, and query performance compared to the state-of-the-art cloud-based solutions.
 
 ## Features
 
@@ -40,7 +44,7 @@ store.create(ntPath)
 
 #### Constructing Filters
 
-KC provides exact and approximate structures for filtering data. Currently KC supports GEFIType.BLOOM, GEFIType.ROARING, and GEFIType.BITSET.
+KC provides exact and approximate structures for filtering data. Currently KC supports ```GEFIType.BLOOM```, ```GEFIType.ROARING```, and ```GEFIType.BITSET```.
 
 ```scala
 import org.apache.spark.sql.SparkSession
