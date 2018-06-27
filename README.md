@@ -2,8 +2,7 @@
 
 ## About
 
-A Knowledge Cube, or KC for short, is a semantically-guided data management architecture, where data management is influenced by the data semantics rather than by a predefined scheme. KC relies on semantics to define how the data is fetched, organized, stored, optimized, and queried. Knowledge cubes use RDF to store data. This allows knowledge cubes to store Linked Data from the Web of Data. Knowledge cubes are envisioned to break down the centralized
-architecture into multiple specialized cubes, each having its own index and data store.
+A Knowledge Cube, or KC for short, is a semantically-guided data management architecture, where data management is influenced by the data semantics rather than by a predefined scheme. KC relies on semantics to define how the data is fetched, organized, stored, optimized, and queried. Knowledge cubes use RDF to store data. This allows knowledge cubes to store Linked Data from the Web of Data. Knowledge cubes are envisioned to break down the centralized architecture into multiple specialized cubes, each having its own index and data store.
 
 
 ## WORQ: Workload-Driven RDF Query Processing
