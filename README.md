@@ -2,9 +2,11 @@
 
 ## About
 
-A Knowledge Cube, or KC for short, is a semantically-guided data management architecture, where data management is influenced by the data semantics rather than by a predefined scheme. Knowledge cubes support the five pillars of Big Data also known as the five V's, namely Volume, Velocity, Veracity, Variety, and Value. Interesting opportunities can be leveraged when learning the semantics of the data. 
+A Knowledge Cube, or KC for short, is a semantically-guided data management architecture, where data management is influenced by the data semantics rather than by a predefined scheme. KC relies on semantics to define how the data is fetched, organized, stored, optimized, and queried. Knowledge cubes use RDF to store data. This allows knowledge cubes to store Linked Data from the Web of Data. Knowledge cubes are envisioned to break down the centralized
+architecture into multiple specialized cubes, each having its own index and data store.
 
-#### WORQ: Workload-Driven RDF Query Processing
+
+## WORQ: Workload-Driven RDF Query Processing
 
 KC uses a workload-driven RDF query processing technique, or WORQ for short, for filtering non-matching entries during join evaluation as early as possible to reduce the communication and computation overhead. WORQ generates a reduced sets of triples (or reductions, for short) to represent join pattern(s) of query workloads. WORQ can materialize the reductions on disk or in memory and reuses the reductions that share the same join pattern(s) to answer queries. Furthermore, these reductions are not computed beforehand, but are rather computed in an online fashion. KC also answer complex analytical queries that involve unbound properties. Based on a realization of KC on top of Spark, extensive experimentation demonstrates an order of magnitude enhancement in terms of preprocessing, storage, and query performance compared to the state-of-the-art cloud-based solutions.
 
@@ -98,7 +100,7 @@ val r = queryProcessor.sparql(query)
 
 ```
 
-### Upcoming Features
+## Upcoming Features
 
 * Spatiotemporal queries
     * **Example:** Range, Distance Join
@@ -110,12 +112,12 @@ val r = queryProcessor.sparql(query)
 * Web-based UI querying
     * **Example:** Send SPARQL queries to spark, view spatial results
     
-### Publications
+## Publications
 
 * Amgad Madkour, Ahmed M. Aly, Walid G. Aref, "WORQ: Workload-Driven RDF Query Processing", ISWC 2018 \[To Appear\]
-
-* Amgad Madkour, Walid G. Aref, Saleh Basalamah, “Knowledge Cubes - A Proposal for Scalable and Semantically-Guided Management of Big Data”, IEEE BigData 2013
 
 * Amgad Madkour, Walid G. Aref, Ahmed M. Aly, “SPARTI: Scalable RDF Data Management Using Query-Centric Semantic Partitioning”, Semantic Big Data (SBD18)
 
 * Amgad Madkour, Walid G. Aref, Sunil Prabhakar, Mohamed Ali, Siarhei Bykau, “TrueWeb: A Proposal for Scalable Semantically-Guided Data Management and Truth Finding in Heterogeneous Web Sources”, Semantic Big Data (SBD18)
+
+* Amgad Madkour, Walid G. Aref, Saleh Basalamah, “Knowledge Cubes - A Proposal for Scalable and Semantically-Guided Management of Big Data”, IEEE BigData 2013
