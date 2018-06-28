@@ -58,8 +58,8 @@ val spark = SparkSession.builder
             .appName(s"KnowledgeCubes Filter Creator")
             .getOrCreate()
             
-var localPath = "/home/amadkour/projects/knowledgecubes/output/bio2rdf/"
-var dbPath = "hdfs://bigdata1-vm1:8020/user/amadkour/bio2rdf-db/"
+var localPath = "LOCAL_PATH"
+var dbPath = "DB_PATH"
 ```
 
 #### SPARQL Querying
