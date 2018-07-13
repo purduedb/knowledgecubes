@@ -6,7 +6,6 @@ import scala.collection.mutable.{HashSet, ListBuffer, Map}
 import org.apache.jena.graph.Triple
 import org.apache.jena.sparql.algebra.{Op, OpVars, OpVisitorBase}
 import org.apache.jena.sparql.algebra.op.{OpBGP, OpProject, OpTriple}
-import org.apache.spark.sql.Column
 
 class QueryVisitor extends OpVisitorBase {
 
@@ -14,7 +13,7 @@ class QueryVisitor extends OpVisitorBase {
   var joinVariables: Map[String, HashSet[Triple]] = Map[String, HashSet[Triple]]()
   var properties: ListBuffer[String] = ListBuffer[String]()
   var unboundPropertyTriples : ListBuffer[Triple] = ListBuffer[Triple]()
-  var projectionList: ListBuffer[Column] = ListBuffer[Column]()
+  var projectionList: ListBuffer[String] = ListBuffer[String]()
 
   override def visit(opBGP: OpBGP): Unit = {
     // Get BGP and process triples
@@ -56,16 +55,16 @@ class QueryVisitor extends OpVisitorBase {
 
   override def visit(opProject: OpProject): Unit = {
       for (v <- opProject.getVars.asScala) {
-        projectionList += new Column(v.toString())
+        projectionList += v.toString()
       }
   }
 
-  def computeProjectionList(op: Op): ListBuffer[Column] = {
+  def computeProjectionList(op: Op): ListBuffer[String] = {
     if (projectionList.isEmpty) {
       val res = OpVars.mentionedVars(op)
       val it = res.iterator()
       while(it.hasNext) {
-        projectionList += new Column(it.next().toString())
+        projectionList += it.next().toString()
       }
     }
     projectionList

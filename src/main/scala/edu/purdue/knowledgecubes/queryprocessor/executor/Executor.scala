@@ -5,7 +5,7 @@ import scala.collection.mutable.{HashSet, ListBuffer}
 import com.typesafe.scalalogging.Logger
 import org.apache.jena.graph.Triple
 import org.apache.jena.sparql.algebra.{Op, OpWalker}
-import org.apache.spark.sql.{DataFrame, Dataset}
+import org.apache.spark.sql.{Column, DataFrame, Dataset}
 import org.apache.spark.sql.functions.col
 import org.slf4j.LoggerFactory
 
@@ -38,7 +38,8 @@ class Executor(catalog: Catalog) {
       visitor.joinVariables.mapValues(v =>
         v.map(t => PrefixHandler.parseBaseURI(t))).toSeq: _*)
     val numUnboundTriples = visitor.unboundPropertyTriples.length
-    val projectionList = visitor.computeProjectionList(op)
+    val projectionListStrings = visitor.computeProjectionList(op)
+    val projectionList = projectionListStrings.map(x => new Column(x))
     val total = numUnboundTriples + numTriples
 
     // Will hold all loaded data
@@ -116,7 +117,7 @@ class Executor(catalog: Catalog) {
   }
 
   def loadData(propName: String,
-               queryFilters: Map[String, String]): Tuple5[Dataset[RDFTriple], Boolean, Long, Long, Long] = {
+               joinFilters: Map[String, String]): (Dataset[RDFTriple], Boolean, Long, Long, Long) = {
     // The three returned values
     var table: Dataset[RDFTriple] = catalog.spark.emptyDataset[RDFTriple]
     var isReductionWarm = false
@@ -124,74 +125,74 @@ class Executor(catalog: Catalog) {
     var loadTime: Long = 0
     var filterTime: Long = 0
 
-    if (queryFilters.nonEmpty && catalog.filterType != GEFIType.NONE) {
+    if (joinFilters.nonEmpty && catalog.filterType != GEFIType.NONE) {
 
-      if ((queryFilters.keySet.contains("s") && queryFilters.keySet.contains("o") &&
-        catalog.joinReductionsInfo.contains(queryFilters("s")) &&
-        catalog.joinReductionsInfo.contains(queryFilters("o")) &&
-        catalog.joinReductionsInfo(queryFilters("s")) == 0 &&
-        catalog.joinReductionsInfo(queryFilters("o")) == 0) ||
-        (queryFilters.size == 1 &&
-          (queryFilters.keySet.contains("s") &&
-          catalog.joinReductionsInfo.contains(queryFilters("s")) &&
-          catalog.joinReductionsInfo(queryFilters("s")) == 0)) ||
-        (queryFilters.size == 1 &&
-          queryFilters.keySet.contains("o") &&
-          catalog.joinReductionsInfo.contains(queryFilters("o")) &&
-          catalog.joinReductionsInfo(queryFilters("o")) == 0)) {
+      if ((joinFilters.keySet.contains("s") && joinFilters.keySet.contains("o") &&
+        catalog.joinReductionsInfo.contains(joinFilters("s")) &&
+        catalog.joinReductionsInfo.contains(joinFilters("o")) &&
+        catalog.joinReductionsInfo(joinFilters("s")) == 0 &&
+        catalog.joinReductionsInfo(joinFilters("o")) == 0) ||
+        (joinFilters.size == 1 &&
+          (joinFilters.keySet.contains("s") &&
+          catalog.joinReductionsInfo.contains(joinFilters("s")) &&
+          catalog.joinReductionsInfo(joinFilters("s")) == 0)) ||
+        (joinFilters.size == 1 &&
+          joinFilters.keySet.contains("o") &&
+          catalog.joinReductionsInfo.contains(joinFilters("o")) &&
+          catalog.joinReductionsInfo(joinFilters("o")) == 0)) {
           return (table, isReductionWarm, numTuples, loadTime, filterTime)
       }
 
       // Compute or load reduction
-      if (queryFilters.keySet.contains("s") &&
-        queryFilters.keySet.contains("o") &&
-        CacheManager.contains(queryFilters("s")) &&
-        CacheManager.contains(queryFilters("o"))) {
+      if (joinFilters.keySet.contains("s") &&
+        joinFilters.keySet.contains("o") &&
+        CacheManager.contains(joinFilters("s")) &&
+        CacheManager.contains(joinFilters("o"))) {
         // Current Policy: Load reduction based on its size | Alternatily: Prefer subject
-        if (CacheManager.get(queryFilters("s")).size < CacheManager.get(queryFilters("o")).size) {
-          table = CacheManager.get(queryFilters("s")).data
-          numTuples = CacheManager.get(queryFilters("s")).size
+        if (CacheManager.get(joinFilters("s")).size < CacheManager.get(joinFilters("o")).size) {
+          table = CacheManager.get(joinFilters("s")).data
+          numTuples = CacheManager.get(joinFilters("s")).size
         } else {
-          table = CacheManager.get(queryFilters("o")).data
-          numTuples = CacheManager.get(queryFilters("o")).size
+          table = CacheManager.get(joinFilters("o")).data
+          numTuples = CacheManager.get(joinFilters("o")).size
         }
         isReductionWarm = true
-      } else if (queryFilters.keySet.contains("s") && CacheManager.contains(queryFilters("s"))) {
-        table = CacheManager.get(queryFilters("s")).data
-        numTuples = CacheManager.get(queryFilters("s")).size
+      } else if (joinFilters.keySet.contains("s") && CacheManager.contains(joinFilters("s"))) {
+        table = CacheManager.get(joinFilters("s")).data
+        numTuples = CacheManager.get(joinFilters("s")).size
         isReductionWarm = true
-      } else if (queryFilters.keySet.contains("o") && CacheManager.contains(queryFilters("o"))) {
-        table = CacheManager.get(queryFilters("o")).data
-        numTuples = CacheManager.get(queryFilters("o")).size
+      } else if (joinFilters.keySet.contains("o") && CacheManager.contains(joinFilters("o"))) {
+        table = CacheManager.get(joinFilters("o")).data
+        numTuples = CacheManager.get(joinFilters("o")).size
         isReductionWarm = true
       } else {
         // Check the catalog if the reduction exists
-        if (queryFilters.keySet.contains("s") &&
-          queryFilters.keySet.contains("o") &&
-          catalog.joinReductionsInfo.contains(queryFilters("s")) &&
-          catalog.joinReductionsInfo(queryFilters("s")) > 0 &&
-          catalog.joinReductionsInfo.contains(queryFilters("o")) &&
-          catalog.joinReductionsInfo(queryFilters("o")) > 0 ) {
+        if (joinFilters.keySet.contains("s") &&
+          joinFilters.keySet.contains("o") &&
+          catalog.joinReductionsInfo.contains(joinFilters("s")) &&
+          catalog.joinReductionsInfo(joinFilters("s")) > 0 &&
+          catalog.joinReductionsInfo.contains(joinFilters("o")) &&
+          catalog.joinReductionsInfo(joinFilters("o")) > 0 ) {
           // Current Policy: Load reduction based on its size | Alternatily: Prefer subject
-          if (catalog.joinReductionsInfo(queryFilters("s")) < catalog.joinReductionsInfo(queryFilters("o"))) {
-            table = catalog.spark.read.parquet(catalog.joinReductionsPath + queryFilters("s")).as[RDFTriple]
+          if (catalog.joinReductionsInfo(joinFilters("s")) < catalog.joinReductionsInfo(joinFilters("o"))) {
+            table = catalog.spark.read.parquet(catalog.joinReductionsPath + joinFilters("s")).as[RDFTriple]
             numTuples = table.count()
           } else {
-            table = catalog.spark.read.parquet(catalog.joinReductionsPath + queryFilters("o")).as[RDFTriple]
+            table = catalog.spark.read.parquet(catalog.joinReductionsPath + joinFilters("o")).as[RDFTriple]
             numTuples = table.count()
           }
           isReductionWarm = true
-        } else if (queryFilters.keySet.contains("s") &&
-          catalog.joinReductionsInfo.contains(queryFilters("s")) &&
-          catalog.joinReductionsInfo(queryFilters("s")) > 0) {
-          table = catalog.spark.read.parquet(catalog.joinReductionsPath + queryFilters("s")).as[RDFTriple]
-          numTuples = table.count()
+        } else if (joinFilters.keySet.contains("s") &&
+          catalog.joinReductionsInfo.contains(joinFilters("s")) &&
+          catalog.joinReductionsInfo(joinFilters("s")) > 0) {
+          table = catalog.spark.read.parquet(catalog.joinReductionsPath + joinFilters("s")).as[RDFTriple]
+          numTuples = catalog.joinReductionsInfo(joinFilters("s"))
           isReductionWarm = true
-        } else if (queryFilters.keySet.contains("o") &&
-          catalog.joinReductionsInfo.contains(queryFilters("o")) &&
-          catalog.joinReductionsInfo(queryFilters("o")) > 0) {
-          table = catalog.spark.read.parquet(catalog.joinReductionsPath + queryFilters("o")).as[RDFTriple]
-          numTuples = table.count()
+        } else if (joinFilters.keySet.contains("o") &&
+          catalog.joinReductionsInfo.contains(joinFilters("o")) &&
+          catalog.joinReductionsInfo(joinFilters("o")) > 0) {
+          table = catalog.spark.read.parquet(catalog.joinReductionsPath + joinFilters("o")).as[RDFTriple]
+          numTuples = catalog.joinReductionsInfo(joinFilters("o"))
           isReductionWarm = true
         } else {
           if (!CacheManager.contains(propName)) {
@@ -203,19 +204,19 @@ class Executor(catalog: Catalog) {
             table = CacheManager.get(propName).data
           }
           // Compute the reduction
-          if (queryFilters.keySet.contains("s")) {
-            val (tbl, num, fTime) = loadReduction(propName, "s", queryFilters("s"), table)
+          if (joinFilters.keySet.contains("s")) {
+            val (tbl, num, fTime) = computeReduction(propName, "s", joinFilters("s"), table)
             table = tbl
             numTuples = num
             filterTime += fTime
-            CacheManager.add(new CacheEntry(queryFilters("s"), numTuples, JOIN_REDUCTION, table))
+            CacheManager.add(new CacheEntry(joinFilters("s"), numTuples, JOIN_REDUCTION, table))
           }
-          if (queryFilters.keySet.contains("o") && !queryFilters.keySet.contains("s")) {
-            val (tbl, num, fTime) = loadReduction(propName, "o", queryFilters("o"), table)
+          if (joinFilters.keySet.contains("o") && !joinFilters.keySet.contains("s")) {
+            val (tbl, num, fTime) = computeReduction(propName, "o", joinFilters("o"), table)
             table = tbl
             numTuples = num
             filterTime += fTime
-            CacheManager.add(new CacheEntry(queryFilters("o"), numTuples, JOIN_REDUCTION, table))
+            CacheManager.add(new CacheEntry(joinFilters("o"), numTuples, JOIN_REDUCTION, table))
           }
           isReductionWarm = false
         }
@@ -229,12 +230,12 @@ class Executor(catalog: Catalog) {
     (table, isReductionWarm, numTuples, loadTime, filterTime)
   }
 
-  def loadReduction(propName: String,
-                    column: String,
-                    filterName: String,
-                    orig: Dataset[RDFTriple]): Tuple3[Dataset[RDFTriple], Long, Long] = {
+  def computeReduction(propName: String,
+                       column: String,
+                       joinFilter: String,
+                       orig: Dataset[RDFTriple]): (Dataset[RDFTriple], Long, Long) = {
     val join = new GEFIJoin(catalog)
-    val reducedEntries = join.compute(propName, column, filterName, orig)
+    val reducedEntries = join.compute(propName, column, joinFilter, orig)
     val start = System.currentTimeMillis()
     val numTuples = reducedEntries.count()
     val filterTime = System.currentTimeMillis() - start
@@ -244,7 +245,7 @@ class Executor(catalog: Catalog) {
     (table, numTuples, filterTime)
   }
 
-  def loadOriginal(propName: String): Tuple3[Dataset[RDFTriple], Long, Long] = {
+  def loadOriginal(propName: String): (Dataset[RDFTriple], Long, Long) = {
     val spark = catalog.spark
     val numTuples = catalog.tablesInfo(propName)("numTuples").toLong
     if (!CacheManager.contains(propName)) {
