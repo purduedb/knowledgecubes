@@ -5,7 +5,9 @@ import scala.collection.mutable.{HashSet, ListBuffer, Map}
 
 import org.apache.jena.graph.Triple
 import org.apache.jena.sparql.algebra.{Op, OpVars, OpVisitorBase}
-import org.apache.jena.sparql.algebra.op.{OpBGP, OpProject, OpTriple}
+import org.apache.jena.sparql.algebra.op.{OpBGP, OpFilter, OpProject, OpTriple}
+import org.apache.jena.sparql.expr.ExprFunction
+
 
 class QueryVisitor extends OpVisitorBase {
 
@@ -14,6 +16,16 @@ class QueryVisitor extends OpVisitorBase {
   var properties: ListBuffer[String] = ListBuffer[String]()
   var unboundPropertyTriples : ListBuffer[Triple] = ListBuffer[Triple]()
   var projectionList: ListBuffer[String] = ListBuffer[String]()
+  var spatialFilters: ListBuffer[ExprFunction] = ListBuffer[ExprFunction]()
+
+  override  def visit(opFilter: OpFilter): Unit = {
+     val func = opFilter.getExprs.getList.get(0).getFunction
+     if(func.getFunctionName(null)
+       .toLowerCase.equals("<java:edu.purdue.knowledgecubes.queryprocessor.spatial.spatialfunctions.contains>")) {
+       spatialFilters += func
+     }
+   }
+
 
   override def visit(opBGP: OpBGP): Unit = {
     // Get BGP and process triples
