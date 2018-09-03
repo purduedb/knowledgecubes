@@ -1,6 +1,7 @@
 package edu.purdue.knowledgecubes.metadata
 
 import java.io.{File, IOException, PrintWriter}
+import java.nio.file.{Files, Paths}
 
 import scala.io.Source
 
@@ -21,6 +22,7 @@ class Catalog(val localPath: String, val dbPath: String, val spark: SparkSession
   var dbInfo: Map[String, String] = Map[String, String]()
   var tablesInfo: Map[String, Map[String, String]] = Map[String, Map[String, String]]()
   var joinReductionsInfo: Map[String, Long] = Map[String, Long]()
+  var cardinalities: Map[String, Long] = Map[String, Long]()
   var joinFilters: Map[String, Map[String, GEFI]] = Map[String, Map[String, GEFI]]()
   var broadcastFilters: Broadcast[Map[String, Map[String, GEFI]]] = _
   var filterType: GEFIType.Value = GEFIType.NONE
@@ -31,10 +33,13 @@ class Catalog(val localPath: String, val dbPath: String, val spark: SparkSession
     dbInfo = dbDoc.parseYaml.convertTo[Map[String, String]]
     LOG.debug(this.dbInfo.toString)
 
-    val reductionsFile = Source.fromFile(localPath + "/join-reductions.yaml")
-    val reductionsDoc = reductionsFile.mkString
-    joinReductionsInfo = reductionsDoc.parseYaml.convertTo[Map[String, Long]]
-    LOG.debug(this.joinReductionsInfo.toString)
+    if (Files.exists(Paths.get(localPath + "/join-reductions.yaml"))) {
+      val reductionsFile = Source.fromFile(localPath + "/join-reductions.yaml")
+      val reductionsDoc = reductionsFile.mkString
+      joinReductionsInfo = reductionsDoc.parseYaml.convertTo[Map[String, Long]]
+      cardinalities ++= joinReductionsInfo
+      LOG.debug(this.joinReductionsInfo.toString)
+    }
 
     val tablesFile = Source.fromFile(localPath + "/tables.yaml")
     val tablesDoc = tablesFile.mkString
@@ -44,6 +49,7 @@ class Catalog(val localPath: String, val dbPath: String, val spark: SparkSession
     val yamlDocs = docs.convertTo[Iterable[Map[String, String]]]
     for(doc <- yamlDocs) {
       tablesInfo += (doc("uri") -> doc)
+      cardinalities += (doc("tableName") -> doc("numTuples").toLong)
     }
     dbFile.close()
     tablesFile.close()
