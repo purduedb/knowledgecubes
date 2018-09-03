@@ -1,6 +1,6 @@
 package edu.purdue.knowledgecubes.queryprocessor.parser
 
-import org.apache.jena.query.{Query, QueryFactory}
+import org.apache.jena.query.QueryFactory
 import org.apache.jena.sparql.algebra.{Algebra, Op}
 
 object Parser {

@@ -173,7 +173,7 @@ class Executor(catalog: Catalog) {
           catalog.joinReductionsInfo(joinFilters("s")) > 0 &&
           catalog.joinReductionsInfo.contains(joinFilters("o")) &&
           catalog.joinReductionsInfo(joinFilters("o")) > 0 ) {
-          // Current Policy: Load reduction based on its size | Alternatily: Prefer subject
+          // Current Policy: Load reduction based on its size | Alternatively: Prefer subject
           if (catalog.joinReductionsInfo(joinFilters("s")) < catalog.joinReductionsInfo(joinFilters("o"))) {
             table = catalog.spark.read.parquet(catalog.joinReductionsPath + joinFilters("s")).as[RDFTriple]
             numTuples = table.count()

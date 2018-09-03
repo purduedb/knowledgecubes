@@ -36,7 +36,7 @@ class BGPOptimizer(catalog: Catalog) extends TransformCopy {
       properties += propName
     }
 
-    val sortedProperties = sortByPropertySelectivity(properties)
+    val sortedProperties = sortByCardinality(properties)
     val reorderedTriples = new util.ArrayList[Triple]()
     val sortedTriples = new util.ArrayList[Triple]()
     val numTriples = opBGP.getPattern.size
@@ -189,11 +189,11 @@ class BGPOptimizer(catalog: Catalog) extends TransformCopy {
     None
   }
 
-  def sortByPropertySelectivity(candidates: ListBuffer[String]): List[String] = {
+  def sortByCardinality(candidates: ListBuffer[String]): List[String] = {
     var sortedMatches = ListBuffer[String]()
     var propCount = mutable.Map[String, Integer]()
     for (uri <- candidates) {
-      val count = catalog.tablesInfo(uri)("numTuples").toInt
+      val count = catalog.cardinalities(uri).toInt
       propCount += (uri -> count)
     }
     val res = mutable.ListMap(propCount.toSeq.sortBy(_._2): _*)
