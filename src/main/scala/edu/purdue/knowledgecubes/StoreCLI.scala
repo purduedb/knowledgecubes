@@ -47,7 +47,7 @@ object StoreCLI {
     val time = Timer.timeInSeconds{ store.create(ntPath) }
     LOG.info(s"Time: $time seconds")
     LOG.info(s"Database Created Successfully")
-    // Terminate spark session
+    store.close
     spark.stop
   }
 }

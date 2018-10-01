@@ -90,6 +90,10 @@ class Store(spark: SparkSession,
     triplesDataFrame.cache()
     create(triplesDataFrame)
   }
+
+  def close(): Unit = {
+    catalog.dictionary.close()
+  }
 }
 
 object Store {

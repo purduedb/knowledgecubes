@@ -36,7 +36,6 @@ object FilterCLI {
     val time = Timer.timeInSeconds{filter.create(filterType, fp)}
     LOG.info(s"Time: $time seconds")
     LOG.info(s"Filters created Successfully")
-    spark.sqlContext.clearCache()
     spark.stop
   }
 }

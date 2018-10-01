@@ -20,7 +20,7 @@ class Catalog(val localPath: String, val dbPath: String, val spark: SparkSession
   val LOG: Logger = LoggerFactory.getLogger(classOf[Catalog])
   // Dictionary
   val options = new Options()
-  options.createIfMissing()
+  options.createIfMissing(false)
   var dictionary = factory.open(new File(localPath + "/dictionary"), options)
   val dataPath: String = dbPath + "/data/"
   val joinReductionsPath: String = dbPath + "/reductions/join/"
@@ -72,10 +72,10 @@ class Catalog(val localPath: String, val dbPath: String, val spark: SparkSession
                       "/tables.yaml") { write(tablesInfo.values.toYaml.print(flowStyle = Block)); close() }
       new PrintWriter(localPath +
                       "/join-reductions.yaml") { write(joinReductionsInfo.toYaml.print(flowStyle = Flow)); close() }
-      dictionary.close()
     } catch {
       case exp: IOException =>
         exp.printStackTrace()
     }
   }
+
 }
