@@ -100,12 +100,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.github.mgunlogson</groupId>
-            <artifactId>cuckoofilter4j</artifactId>
-            <version>LATEST</version>
-        </dependency>
-
-        <dependency>
             <groupId>net.jcazevedo</groupId>
             <artifactId>moultingyaml_2.11</artifactId>
             <version>0.4.0</version>
@@ -121,6 +115,12 @@
             <groupId>org.roaringbitmap</groupId>
             <artifactId>RoaringBitmap</artifactId>
             <version>LATEST</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.fusesource.leveldbjni</groupId>
+            <artifactId>leveldbjni-all</artifactId>
+            <version>1.8</version>
         </dependency>
 
     </dependencies>
@@ -141,7 +141,7 @@
                     <sourceDirectory>${project.basedir}/src/main/scala</sourceDirectory>
                     <testSourceDirectory>${project.basedir}/src/test/scala</testSourceDirectory>
                     <configLocation>${project.basedir}/scalastyle-config.xml</configLocation>
-                    <!--<outputFile>${project.basedir}/scalastyle-output.xml</outputFile>-->
+                    <!--<encodedDataset>${project.basedir}/scalastyle-output.xml</encodedDataset>-->
                     <outputEncoding>UTF-8</outputEncoding>
                 </configuration>
                 <executions>
@@ -210,7 +210,6 @@
                                     <exclude>com.google.code.findbugs:jsr305</exclude>
                                     <exclude>com.google.code.gson:gson</exclude>
                                     <exclude>com.google.inject.extensions:guice-servlet</exclude>
-                                    <!--<exclude>com.google.guava:guava</exclude>-->
                                     <exclude>com.google.protobuf:protobuf-java</exclude>
                                     <exclude>com.jcraft:jsch</exclude>
                                     <exclude>com.ning:compress-lzf</exclude>
@@ -267,7 +266,7 @@
                                     <exclude>org.codehaus.jackson:jackson-*</exclude>
                                     <exclude>org.codehaus.janino:*</exclude>
                                     <exclude>org.codehaus.jettison:jettison</exclude>
-                                    <exclude>org.fusesource.leveldbjni:leveldbjni-all</exclude>
+                                    <!--<exclude>org.fusesource.leveldbjni:leveldbjni-all</exclude>-->
                                     <exckude>org.glassfish.hk2*</exckude>
                                     <exclude>org.glassfish.jersey*</exclude>
                                     <exclude>org.javassist:javassist</exclude>

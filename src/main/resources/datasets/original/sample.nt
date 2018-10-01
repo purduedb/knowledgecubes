@@ -1,5 +1,5 @@
-<http://twitter.com/resources/Tweet1> <http://twitter.com/resources/hasText> "Tweet1" .
-<http://twitter.com/resources/Tweet2> <http://twitter.com/resources/hasText> "Tweet2" .
+<http://twitter.com/resources/Tweet1> <http://twitter.com/resources/hasText> "Tweet1"@en .
+<http://twitter.com/resources/Tweet2> <http://twitter.com/resources/hasText> "Tweet2"@fr .
 <http://twitter.com/resources/Tweet3> <http://twitter.com/resources/hasText> "Tweet3" .
 <http://twitter.com/resources/Tweet4> <http://twitter.com/resources/hasText> "Tweet4" .
 <http://twitter.com/resources/Tweet1> <http://twitter.com/resources/hasLatitude> "10.10" .

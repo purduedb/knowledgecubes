@@ -35,9 +35,7 @@ object BenchmarkReductionsCLI {
 
     val falsePositiveRate = fp
     var filterType = GEFIType.NONE
-    if(ftype == "cuckoo") {
-      filterType = GEFIType.CUCKOO
-    } else if (ftype == "bloom") {
+    if (ftype == "bloom") {
       filterType = GEFIType.BLOOM
     } else if (ftype == "roaring") {
       filterType = GEFIType.ROARING

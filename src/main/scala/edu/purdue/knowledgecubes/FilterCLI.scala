@@ -24,9 +24,7 @@ object FilterCLI {
     val ftype = params("ftype")
 
     var filterType = GEFIType.BLOOM
-    if (ftype == "cuckoo") {
-      filterType = GEFIType.CUCKOO
-    } else if (ftype == "roaring") {
+    if (ftype == "roaring") {
       filterType = GEFIType.ROARING
     } else if (ftype == "bitset") {
       filterType = GEFIType.BITSET

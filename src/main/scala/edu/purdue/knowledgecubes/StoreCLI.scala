@@ -17,7 +17,8 @@ object StoreCLI {
     val params = CliParser.parseLoader(args)
     val spark = SparkSession.builder
       .appName(s"Knowledge Cubes Loader")
-      .config("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+      .config("spark.driver.maxResultSize", "128g")
+      .config("spark.network.timeout", "100000000")
       .getOrCreate()
 
     val localPath = params("local")
@@ -28,9 +29,7 @@ object StoreCLI {
 
     val falsePositiveRate = fp
     var filterType = GEFIType.NONE
-    if(ftype == "cuckoo") {
-      filterType = GEFIType.CUCKOO
-    } else if (ftype == "bloom") {
+    if (ftype == "bloom") {
       filterType = GEFIType.BLOOM
     } else if (ftype == "roaring") {
       filterType = GEFIType.ROARING

@@ -1,5 +1,5 @@
 SELECT ?x ?y WHERE {
-	?x <3> ?y .
-	?x <6> ?y .
+	?x <17> ?y .
+	?x <27> ?y .
 }
 #EOQ#

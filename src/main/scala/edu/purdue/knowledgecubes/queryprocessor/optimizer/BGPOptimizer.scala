@@ -32,7 +32,7 @@ class BGPOptimizer(catalog: Catalog) extends TransformCopy {
     val properties = ListBuffer[String]()
 
     for (t <- p.getList.asScala) {
-      val propName = PrefixHandler.parseBaseURI(t).getPredicate.toString
+      val propName = PrefixHandler.parseBaseURI(t, catalog).getPredicate.toString
       properties += propName
     }
 
@@ -43,7 +43,7 @@ class BGPOptimizer(catalog: Catalog) extends TransformCopy {
 
     for (prop <- sortedProperties) {
       for (t <- p.getList.asScala) {
-        if (PrefixHandler.parseBaseURI(t).getPredicate.toString == prop) {
+        if (PrefixHandler.parseBaseURI(t, catalog).getPredicate.toString == prop) {
           sortedTriples.add(t)
         }
       }

@@ -32,11 +32,11 @@ class Executor(catalog: Catalog) {
     OpWalker.walk(opRoot, visitor)
 
     // Get visitor information
-    val bgpTriples = visitor.triples.map(x => PrefixHandler.parseBaseURI(x))
+    val bgpTriples = visitor.triples.map(x => PrefixHandler.parseBaseURI(x, catalog))
     val numTriples = visitor.triples.length
     val queryJoins = Map(
       visitor.joinVariables.mapValues(v =>
-        v.map(t => PrefixHandler.parseBaseURI(t))).toSeq: _*)
+        v.map(t => PrefixHandler.parseBaseURI(t, catalog))).toSeq: _*)
     val numUnboundTriples = visitor.unboundPropertyTriples.length
     val projectionListStrings = visitor.computeProjectionList(op)
     val projectionList = projectionListStrings.map(x => new Column(x))
