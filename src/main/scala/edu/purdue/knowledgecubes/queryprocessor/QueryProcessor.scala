@@ -112,6 +112,12 @@ class QueryProcessor(spark: SparkSession,
 
   def clearCache(): Unit = CacheManager.clear()
 
+  def close(): Unit = {
+    saveReductions()
+    clearCache()
+    catalog.dictionary.close()
+  }
+
   def saveReductions(): Unit = {
     for ((pattern, entry) <- CacheManager.entries) {
       if (entry.entryType == CacheEntryType.JOIN_REDUCTION) {

@@ -19,36 +19,19 @@ object GEFIJoinUtils {
              name: String,
              path: String): Unit = {
     var filterSize = size
-    if (filterType == GEFIType.CUCKOO) {
-      if (size < 5) {
-        filterSize = 10
-      }
-    }
     var newFilter = new GEFI(filterType, filterSize, falsePositiveRate)
-
-    if(filterType == GEFIType.CUCKOO) {
-      val colType = data.schema.head.dataType
-      val updateFilter: (GEFI, InternalRow) => Unit = colType match {
-        case StringType => (filter, row) => filter.add(row.getInt(0))
-        case _ =>
-          throw new IllegalArgumentException(
-            s"Datatype supported is String only"
-          )
-      }
-      val zero = new GEFI(filterType, filterSize, falsePositiveRate)
-      newFilter = data.queryExecution.toRdd.treeAggregate(zero)(
-        (filter: GEFI, row: InternalRow) => {
-          updateFilter(filter, row)
-          filter
-        },
-        (filter1, filter2) => filter1.union(filter2)
-      )
-    } else {
-      val iter = data.toLocalIterator()
-      while (iter.hasNext) {
-        newFilter.add(iter.next.getInt(0))
-      }
+    val colType = data.schema.head.dataType
+    val updateFilter: (GEFI, InternalRow) => Unit = {
+      (filter, row) => filter.add(row.getInt(0))
     }
+    val zero = new GEFI(filterType, filterSize, falsePositiveRate)
+    newFilter = data.queryExecution.toRdd.treeAggregate(zero)(
+      (filter: GEFI, row: InternalRow) => {
+        updateFilter(filter, row)
+        filter
+      },
+      (filter1, filter2) => filter1.union(filter2)
+    )
     save(filterType, falsePositiveRate, newFilter, colName + "_" + name, path)
   }
 

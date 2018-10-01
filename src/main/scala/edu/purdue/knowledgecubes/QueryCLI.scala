@@ -34,11 +34,15 @@ object QueryCLI {
     val ftype = params("ftype")
     val fp = params("fp").toDouble
 
+    val directory = new File(localPath)
+    if (!directory.exists) {
+      LOG.error("Local Path Does Not Exist, Exiting")
+      System.exit(1)
+    }
+
     val falsePositiveRate = fp
     var filterType = GEFIType.NONE
-    if(ftype == "cuckoo") {
-      filterType = GEFIType.CUCKOO
-    } else if (ftype == "bloom") {
+    if (ftype == "bloom") {
       filterType = GEFIType.BLOOM
     } else if (ftype == "roaring") {
       filterType = GEFIType.ROARING
@@ -84,13 +88,13 @@ object QueryCLI {
           + r.isWarm)
         println(r.execTime)
       }
-      queryProcessor.saveReductions()
-      queryProcessor.clearCache()
+      queryProcessor.close()
       printer.close()
     } catch {
       case exp: IOException =>
         exp.printStackTrace()
     }
+
     spark.stop
   }
 

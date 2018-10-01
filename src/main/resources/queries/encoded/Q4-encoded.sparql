@@ -1,4 +1,4 @@
 SELECT ?x WHERE {
-	?x <3> ?x .
+	?x <17> ?x .
 }
 #EOQ#

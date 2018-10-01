@@ -43,4 +43,8 @@ class GEFIJoinCreator(spark: SparkSession, dbPath: String, localPath: String) {
       data.unpersist()
     }
   }
+
+  def close(): Unit = {
+    spark.sqlContext.clearCache()
+  }
 }

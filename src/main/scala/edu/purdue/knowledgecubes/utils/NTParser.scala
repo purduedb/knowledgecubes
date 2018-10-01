@@ -1,38 +1,20 @@
 package edu.purdue.knowledgecubes.utils
 
-import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 import edu.purdue.knowledgecubes.rdf.RDFTriple
 
 object NTParser {
 
-  def parse(spark: SparkSession, path: String): DataFrame = {
-    val parsed = spark.sparkContext.textFile(path)
-      .filter(x => x.split(" ").size > 1)
+  def parse(spark: SparkSession, path: String): Dataset[RDFTriple] = {
+    import spark.sqlContext.implicits._
+    spark.read.textFile(path)
       .map(line => {
-        var value = ""
-        if (line.endsWith(".")) {
-          value = line.substring(0, line.length - 2)
-        }
-        var parts = value.split(" ") // Split on space
+        var parts = line.split(" ") // Split on space
         var sub = parts(0)
-        if (sub.startsWith("<") && sub.endsWith(">")) {
-          sub = sub.replace("<", "").replace(">", "")
-        }
         var prop = parts(1)
-        if (prop.startsWith("<") && prop.endsWith(">")) {
-          prop = prop.replace("<", "").replace(">", "")
-        }
-        var obj = parts.slice(2, parts.size).mkString(" ")
-        if (obj.startsWith("<") && obj.endsWith(">")) {
-          obj = obj.replace("<", "").replace(">", "")
-        }
-        if (obj.contains("\"")) {
-          obj = obj.replaceAll("\"", "")
-        }
+        var obj = parts(2)
         RDFTriple(sub.toInt, prop.toInt, obj.toInt)
       })
-    spark.sqlContext.createDataFrame(parsed)
   }
-
 }

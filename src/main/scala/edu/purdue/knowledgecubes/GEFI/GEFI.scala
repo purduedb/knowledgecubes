@@ -2,8 +2,6 @@ package edu.purdue.knowledgecubes.GEFI
 
 import scala.collection.mutable
 
-import com.github.mgunlogson.cuckoofilter4j.CuckooFilter
-import com.google.common.hash.Funnels
 import orestes.bloomfilter.{BloomFilter, FilterBuilder}
 import orestes.bloomfilter.HashProvider.HashMethod
 import org.roaringbitmap.RoaringBitmap
@@ -19,8 +17,6 @@ class GEFI(val filterType: GEFIType.Value, val size: Long, val falsePositiveRate
       .falsePositiveProbability(falsePositiveRate)
       .hashFunction(HashMethod.Murmur3)
       .buildBloomFilter()
-  } else if (filterType == GEFIType.CUCKOO) {
-    filter = new CuckooFilter.Builder(Funnels.stringFunnel(), size).withFalsePositiveRate(falsePositiveRate).build
   } else if (filterType == GEFIType.ROARING) {
     filter = new RoaringBitmap()
   } else if (filterType == GEFIType.BITSET) {
@@ -30,8 +26,6 @@ class GEFI(val filterType: GEFIType.Value, val size: Long, val falsePositiveRate
   def add(elem: Integer): Unit = {
     if (filterType == GEFIType.BLOOM) {
       filter.asInstanceOf[BloomFilter[Integer]].add(elem)
-    } else if (filterType == GEFIType.CUCKOO) {
-      filter.asInstanceOf[CuckooFilter[Integer]].put(elem)
     } else if (filterType == GEFIType.ROARING) {
       filter.asInstanceOf[RoaringBitmap].add(elem)
     } else if (filterType == GEFIType.BITSET) {
@@ -42,8 +36,6 @@ class GEFI(val filterType: GEFIType.Value, val size: Long, val falsePositiveRate
   def contains(elem: Integer): Boolean = {
     if (filterType == GEFIType.BLOOM) {
       filter.asInstanceOf[BloomFilter[Integer]].contains(elem)
-    } else if (filterType == GEFIType.CUCKOO) {
-      filter.asInstanceOf[CuckooFilter[Integer]].mightContain(elem)
     } else if (filterType == GEFIType.ROARING) {
       filter.asInstanceOf[RoaringBitmap].contains(elem)
     } else if (filterType == GEFIType.BITSET) {

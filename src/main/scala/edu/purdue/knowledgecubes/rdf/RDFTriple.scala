@@ -1,3 +1,3 @@
 package edu.purdue.knowledgecubes.rdf
 
-case class RDFTriple(s: Integer, p: Integer, o: Integer)
+case class RDFTriple(s: Int, p: Int, o: Int)
