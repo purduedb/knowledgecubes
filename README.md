@@ -14,7 +14,7 @@ KC uses a workload-driven RDF query processing technique, or WORQ for short, for
 * A spark-based API for SPARQL querying
 * Efficient execution of frequent workload join patterns
 * Materialze workload join patterns in memory or on disk
-* Efficiently answer unbound property querying
+* Efficiently answer unbound property queries
 
 ## Usage
 
@@ -98,25 +98,13 @@ val query =
 val r = queryProcessor.sparql(query)
 
 ```
-
-## Upcoming Features
-
-* Spatiotemporal queries
-    * **Example:** Range, Distance Join
-* Matrix-based operations over RDF data
-    * Process graph algorithms
-        * **Example:** Page Rank
-    * Process natural language queries
-        * **Example:** Similarity, Relatedness
-* Web-based UI querying
-    * **Example:** Send SPARQL queries to spark, view spatial results
     
 ## Publications
 
-* Amgad Madkour, Ahmed M. Aly, Walid G. Aref, "WORQ: Workload-Driven RDF Query Processing", ISWC 2018 \[To Appear\]
+* Amgad Madkour, Ahmed M. Ali, Walid G. Aref, "WORQ: Workload-driven RDF Query Processing", ISWC 2018 [[Paper](https://amgadmadkour.github.io/files/papers/worq.pdf)]
 
-* Amgad Madkour, Walid G. Aref, Ahmed M. Aly, “SPARTI: Scalable RDF Data Management Using Query-Centric Semantic Partitioning”, Semantic Big Data (SBD18@SIGMOD)
+* Amgad Madkour, Walid G. Aref, Ahmed M. Aly, "SPARTI: Scalable RDF Data Management Using Query-Centric Semantic Partitioning", Semantic Big Data (SBD18) [[Paper](https://amgadmadkour.github.io/files/papers/sparti.pdf)][[Slides](https://amgadmadkour.github.io/files/presentations/SPARTI-SBD2018.pdf)]
 
-* Amgad Madkour, Walid G. Aref, Sunil Prabhakar, Mohamed Ali, Siarhei Bykau, “TrueWeb: A Proposal for Scalable Semantically-Guided Data Management and Truth Finding in Heterogeneous Web Sources”, Semantic Big Data (SBD18@SIGMOD)
+* Amgad Madkour, Walid G. Aref, Sunil Prabhakar, Mohamed Ali, Siarhei Bykau, "TrueWeb: A Proposal for Scalable Semantically-Guided Data Management and Truth Finding in Heterogeneous Web Sources", Semantic Big Data (SBD18) [[Paper](https://amgadmadkour.github.io/files/papers/trueweb.pdf)][[Slides](https://amgadmadkour.github.io/files/presentations/TrueWeb-SBD2018.pdf)]
 
-* Amgad Madkour, Walid G. Aref, Saleh Basalamah, “Knowledge Cubes - A Proposal for Scalable and Semantically-Guided Management of Big Data”, IEEE BigData 2013
+* Amgad Madkour, Walid G. Aref, Saleh Basalamah, “Knowledge Cubes - A Proposal for Scalable and Semantically-Guided Management of Big Data”, IEEE BigData 2013 [[Paper](https://amgadmadkour.github.io/files/papers/bigdata2013.pdf)][[Slides](https://amgadmadkour.github.io/files/presentations/KnowledgeCubes.pdf)]
