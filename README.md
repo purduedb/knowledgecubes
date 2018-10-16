@@ -18,11 +18,25 @@ KC uses a workload-driven RDF query processing technique, or WORQ for short, for
 
 ## Usage
 
-KC provide spark-based API for issuing RDF related operations.
+KC provide spark-based API for issuing RDF related operations. There are three steps necessary for running the system: 
 
-#### Creating an RDF Store
+* Dictionary Encoding
+* Store Creation
+* Querying
 
-KC provide the Store class for creation of an RDF store. The input to the store is a spark session, database path where the RDF dataset will be stores, and a local configuration path
+#### Dictionary Encoding 
+
+KC requires that the dataset be dictionary encoded. The dictionary encoding allows adding resources (subjects or objects) as integers to the filters. 
+
+```bash
+java -cp target/uber-knowledgecubes-0.1.0.jar edu.purdue.knowledgecubes.DictionaryEncoderCLI -i [NT File] -o [Output File] -l [Local Path for the new store] -s space
+```
+
+The command generates a dictionary encoded version of the dataset. This encoded NT file is used for creating the store. KC automatically encodes and decodes SPARQL queries and the corresponding results. 
+
+#### Store Creation
+
+KC provide the Store class for creation of an RDF store. The input to the store is a spark session, database path where the RDF dataset will be stores, and a local configuration path.
 
 ```scala
 import org.apache.spark.sql.SparkSession
@@ -41,25 +55,6 @@ val spark = SparkSession.builder
 
 val store = Store(spark, dbPath, localPath)
 store.create(ntPath)
-```
-
-#### Constructing Filters
-
-KC provides exact and approximate structures for filtering data. Currently KC supports ```GEFIType.BLOOM```, ```GEFIType.ROARING```, and ```GEFIType.BITSET```.
-
-```scala
-import org.apache.spark.sql.SparkSession
-
-import edu.purdue.knowledgecubes.GEFI.GEFIType
-import edu.purdue.knowledgecubes.GEFI.join.GEFIJoinCreator
-import edu.purdue.knowledgecubes.utils.Timer
-
-val spark = SparkSession.builder
-            .appName(s"KnowledgeCubes Filter Creator")
-            .getOrCreate()
-            
-var localPath = "/path/to/db/path"
-var dbPath = "/path/to/local/path"
 ```
 
 #### SPARQL Querying
@@ -98,6 +93,33 @@ val query =
 val r = queryProcessor.sparql(query)
 
 ```
+
+#### Constructing Filters
+
+Additionaly, KC provides an API for creating additional filters. KC provides exact and approximate structures for filtering data. Currently KC supports ```GEFIType.BLOOM```, ```GEFIType.ROARING```, and ```GEFIType.BITSET```.
+
+```scala
+import org.apache.spark.sql.SparkSession
+
+import edu.purdue.knowledgecubes.GEFI.GEFIType
+import edu.purdue.knowledgecubes.GEFI.join.GEFIJoinCreator
+import edu.purdue.knowledgecubes.utils.Timer
+
+val spark = SparkSession.builder
+            .appName(s"KnowledgeCubes Filter Creator")
+            .getOrCreate()
+            
+var localPath = "/path/to/db/path"
+var dbPath = "/path/to/local/path"
+```
+
+#### Query Execution Benchmarking
+
+KC provides a set of benchmarking classes
+
+* **BenchmarkFilteringCLI:** For benchmarking the query execution when using filters
+* **BenchamrkReductionsCLI:** For benchmarking the query execution when using reductions only
+
     
 ## Publications
 
@@ -108,3 +130,9 @@ val r = queryProcessor.sparql(query)
 * Amgad Madkour, Walid G. Aref, Sunil Prabhakar, Mohamed Ali, Siarhei Bykau, "TrueWeb: A Proposal for Scalable Semantically-Guided Data Management and Truth Finding in Heterogeneous Web Sources", Semantic Big Data (SBD18) [[Paper](https://amgadmadkour.github.io/files/papers/trueweb.pdf)][[Slides](https://amgadmadkour.github.io/files/presentations/TrueWeb-SBD2018.pdf)]
 
 * Amgad Madkour, Walid G. Aref, Saleh Basalamah, “Knowledge Cubes - A Proposal for Scalable and Semantically-Guided Management of Big Data”, IEEE BigData 2013 [[Paper](https://amgadmadkour.github.io/files/papers/bigdata2013.pdf)][[Slides](https://amgadmadkour.github.io/files/presentations/KnowledgeCubes.pdf)]
+
+## Contact
+
+If you have any problems running KC please feel free to send an email. 
+
+* Amgad Madkour <amgad@cs.purdue.edu>
