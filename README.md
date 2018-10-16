@@ -128,7 +128,7 @@ KC provides a set of benchmarking classes
     
 ## Publications
 
-* Amgad Madkour, Ahmed M. Ali, Walid G. Aref, "WORQ: Workload-driven RDF Query Processing", ISWC 2018 [[Paper](https://amgadmadkour.github.io/files/papers/worq.pdf)]
+* Amgad Madkour, Ahmed M. Ali, Walid G. Aref, "WORQ: Workload-driven RDF Query Processing", ISWC 2018 [[Paper](https://amgadmadkour.github.io/files/papers/worq.pdf)][[Slides](https://amgadmadkour.github.io/files/presentations/WORQ-ISWC2018.pdf)]
 
 * Amgad Madkour, Walid G. Aref, Ahmed M. Aly, "SPARTI: Scalable RDF Data Management Using Query-Centric Semantic Partitioning", Semantic Big Data (SBD18) [[Paper](https://amgadmadkour.github.io/files/papers/sparti.pdf)][[Slides](https://amgadmadkour.github.io/files/presentations/SPARTI-SBD2018.pdf)]
 
