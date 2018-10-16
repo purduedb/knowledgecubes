@@ -111,6 +111,11 @@ val spark = SparkSession.builder
             
 var localPath = "/path/to/db/path"
 var dbPath = "/path/to/local/path"
+var filterType = GEFIType.ROARING
+var fp = 0
+
+val filter = new GEFIJoinCreator(spark, dbPath, localPath)
+filter.create(filterType, fp)
 ```
 
 #### Query Execution Benchmarking
