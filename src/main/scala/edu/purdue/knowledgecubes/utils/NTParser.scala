@@ -13,7 +13,7 @@ object NTParser {
         var parts = line.split(" ") // Split on space
         var sub = parts(0)
         var prop = parts(1)
-        var obj = parts(2)
+        var obj = parts.slice(2, parts.size).mkString(" ")
         RDFTriple(sub.toInt, prop.toInt, obj)
       })
   }
