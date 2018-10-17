@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory
 
 import edu.purdue.knowledgecubes.GEFI.GEFIType
 import edu.purdue.knowledgecubes.queryprocessor.QueryProcessor
-import edu.purdue.knowledgecubes.storage.cache.CacheManager
 import edu.purdue.knowledgecubes.utils.CliParser
 
 object QueryCLI {
@@ -86,7 +85,7 @@ object QueryCLI {
           r.maxJoins + "\t" +
           r.numTriples + "\t"
           + r.isWarm)
-        println(r.execTime)
+        println(s"${r.execTime}ms (${r.numResults})")
       }
       queryProcessor.close()
       printer.close()

@@ -2,7 +2,6 @@ package edu.purdue.knowledgecubes
 
 import java.io.{File, FileWriter, PrintWriter}
 
-import scala.collection.mutable
 import scala.io.Source
 
 import com.typesafe.scalalogging.Logger
@@ -29,10 +28,13 @@ object DictionaryEncoderCLI {
     }
 
     // Dictionary
+    val dictDir = new File(localPath + "/dictionary")
+    dictDir.mkdir()
     val options = new Options()
     options.createIfMissing()
     options.cacheSize(1000000 * 1048576) // 1G
-    val dictionary = factory.open(new File(localPath + "/dictionary"), options)
+    val dictionaryStr2Id = factory.open(new File(localPath + "/dictionary/Str2Id"), options)
+    val dictionaryId2Str = factory.open(new File(localPath + "/dictionary/Id2Str"), options)
 
     // Output file(s)
     val encodedDataset = new PrintWriter(new FileWriter(output))
@@ -62,38 +64,49 @@ object DictionaryEncoderCLI {
       if (sub.startsWith("<") && sub.endsWith(">")) {
         sub = sub.replace("<", "").replace(">", "")
       }
-      var s = dictionary.get(bytes(sub))
-      if (s == null) {
+      var sId = dictionaryStr2Id.get(bytes(sub))
+      if (sId == null) {
         counter += 1
-        s = bytes(counter.toString)
-        dictionary.put(bytes(sub), s)
+        sId = bytes(counter.toString)
+        dictionaryStr2Id.put(bytes(sub), sId)
+        dictionaryId2Str.put(sId, bytes(sub))
       }
       var pred = parts(1)
       if (pred.startsWith("<") && pred.endsWith(">")) {
         pred = pred.replace("<", "").replace(">", "")
       }
-      var p = dictionary.get(bytes(pred))
-      if (p == null) {
+      var pId = dictionaryStr2Id.get(bytes(pred))
+      if (pId == null) {
         counter += 1
-        p = bytes(counter.toString)
-        dictionary.put(bytes(pred), p)
+        pId = bytes(counter.toString)
+        dictionaryStr2Id.put(bytes(pred), pId)
+        dictionaryId2Str.put(pId, bytes(pred))
         predicatesFile.println(s"$counter\t$pred")
       }
       var obj = parts.slice(2, parts.size).mkString(" ")
+      var objIsResource = false
       if (obj.startsWith("<") && obj.endsWith(">")) {
+        objIsResource = true
         obj = obj.replace("<", "").replace(">", "")
       }
-      var o = dictionary.get(bytes(obj))
-      if (o == null) {
-        counter += 1
-        o = bytes(counter.toString)
-        dictionary.put(bytes(obj), o)
+      var objVal = ""
+      if (objIsResource) {
+        var oId = dictionaryStr2Id.get(bytes(obj))
+        if (oId == null) {
+          counter += 1
+          oId = bytes(counter.toString)
+          dictionaryStr2Id.put(bytes(obj), oId)
+          dictionaryId2Str.put(oId, bytes(obj))
+        }
+        objVal = asString(oId)
+      } else {
+        objVal = obj
       }
-      encodedDataset.println(s"${asString(s)} ${asString(p)} ${asString(o)}")
+      encodedDataset.println(s"${asString(sId)} ${asString(pId)} ${objVal}")
     }
-    dictionary.close()
+    dictionaryStr2Id.close()
+    dictionaryId2Str.close()
     encodedDataset.close()
     predicatesFile.close()
   }
-
 }

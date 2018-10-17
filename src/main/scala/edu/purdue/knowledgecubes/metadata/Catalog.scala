@@ -10,7 +10,7 @@ import net.jcazevedo.moultingyaml.DefaultYamlProtocol._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.SparkSession
 import org.fusesource.leveldbjni.JniDBFactory.{asString, factory}
-import org.iq80.leveldb.Options
+import org.iq80.leveldb.{DB, Options}
 import org.slf4j.{Logger, LoggerFactory}
 
 import edu.purdue.knowledgecubes.GEFI.{GEFI, GEFIType}
@@ -21,7 +21,12 @@ class Catalog(val localPath: String, val dbPath: String, val spark: SparkSession
   // Dictionary
   val options = new Options()
   options.createIfMissing(false)
-  var dictionary = factory.open(new File(localPath + "/dictionary"), options)
+  var dictionaryStr2Id: DB = factory.open(new File(localPath + "/dictionary/Str2Id"), options)
+  var dictionaryId2Str: DB = factory.open(new File(localPath + "/dictionary/Id2Str"), options)
+  var predicatesId2Str: Map[Int, String] = Source.fromFile(localPath + "/predicates_ids.tsv").
+                                                getLines().
+                                                map(_.split("\t")).
+                                                map(arr => arr(0).toInt->arr(1)).toMap
   val dataPath: String = dbPath + "/data/"
   val joinReductionsPath: String = dbPath + "/reductions/join/"
   var dbInfo: Map[String, String] = Map[String, String]()

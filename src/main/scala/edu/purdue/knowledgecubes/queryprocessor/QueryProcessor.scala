@@ -3,10 +3,12 @@ package edu.purdue.knowledgecubes.queryprocessor
 import java.io._
 
 import scala.collection.mutable
+import scala.collection.mutable.ListBuffer
 
 import com.typesafe.scalalogging.Logger
-import org.apache.spark.sql.{DataFrame, SaveMode, SparkSession}
+import org.apache.spark.sql.{Row, SaveMode, SparkSession}
 import org.slf4j.LoggerFactory
+import org.fusesource.leveldbjni.JniDBFactory.{asString, bytes}
 
 import edu.purdue.knowledgecubes.GEFI.{GEFI, GEFIType}
 import edu.purdue.knowledgecubes.metadata.{Catalog, Result}
@@ -28,9 +30,25 @@ class QueryProcessor(spark: SparkSession,
   catalog.filterType = filterType
   catalog.loadConfigurations()
 
-  def sparql(query: String): DataFrame = {
+  def sparql(query: String): List[Row] = {
     val result = benchmark(query)
-    result.output
+    var listResult = result.output.collect()
+    var numColumns = result.projectionList.size
+
+    var finalResults = ListBuffer[Row]()
+    for (res <- listResult) {
+      var newVals = ListBuffer[String]()
+      for(i <- 0 until numColumns) {
+        val v = catalog.dictionaryId2Str.get(bytes(res.get(i).toString))
+        if (v == null) {
+          newVals += res.get(i).toString
+        } else {
+          newVals += asString(v)
+        }
+      }
+      finalResults += Row.fromSeq(newVals)
+    }
+    finalResults.toList
   }
 
   def benchmark(query: String): Result = {
@@ -115,7 +133,7 @@ class QueryProcessor(spark: SparkSession,
   def close(): Unit = {
     saveReductions()
     clearCache()
-    catalog.dictionary.close()
+    catalog.dictionaryStr2Id.close()
   }
 
   def saveReductions(): Unit = {
