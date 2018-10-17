@@ -30,30 +30,30 @@ object PrefixHandler {
 
     if(triple.getSubject.isURI && triple.getSubject.toString.contains("http://localhost/resource/")) {
       s = NodeFactory.createURI(
-        asString(catalog.dictionary.get(bytes(triple.getSubject.toString().split("http://localhost/resource/")(1))))
+        asString(catalog.dictionaryStr2Id.get(bytes(triple.getSubject.toString().split("http://localhost/resource/")(1))))
       )
     } else if (triple.getSubject.isURI) {
       s = NodeFactory.createURI(
-        asString(catalog.dictionary.get(bytes(triple.getSubject.toString)))
+        asString(catalog.dictionaryStr2Id.get(bytes(triple.getSubject.toString)))
       )
     }
 
     if(triple.getPredicate.isURI && triple.getPredicate.toString.contains("http://localhost/resource/")) {
       p = NodeFactory.createURI(
-        asString(catalog.dictionary.get(bytes(triple.getPredicate.toString().split("http://localhost/resource/")(1))))
+        asString(catalog.dictionaryStr2Id.get(bytes(triple.getPredicate.toString().split("http://localhost/resource/")(1))))
       )
     } else if (triple.getPredicate.isURI) {
       p = NodeFactory.createURI(
-        asString(catalog.dictionary.get(bytes(triple.getPredicate.toString)))
+        asString(catalog.dictionaryStr2Id.get(bytes(triple.getPredicate.toString)))
       )
     }
     if(triple.getObject.isURI && triple.getObject.toString.contains("http://localhost/resource/")) {
       o = NodeFactory.createURI(
-        asString(catalog.dictionary.get(bytes(triple.getObject.toString().split("http://localhost/resource/")(1))))
+        asString(catalog.dictionaryStr2Id.get(bytes(triple.getObject.toString().split("http://localhost/resource/")(1))))
       )
     } else if (triple.getObject.isURI) {
       o = NodeFactory.createURI(
-        asString(catalog.dictionary.get(bytes(triple.getObject.toString)))
+        asString(catalog.dictionaryStr2Id.get(bytes(triple.getObject.toString)))
       )
     }
     new Triple(s, p, o)

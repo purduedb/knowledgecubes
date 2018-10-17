@@ -59,6 +59,7 @@ class Store(spark: SparkSession,
       // Statistics
       val propTable = Map[String, String]()
       propTable += ("uri" -> uri)
+      propTable += ("predicate" -> catalog.predicatesId2Str(uri.toInt))
       propTable += ("tableName" -> tableName)
       propTable += ("numTuples" -> size.toString)
       propTable += ("ratio" -> (size.toFloat / numTuples.toFloat).toString)
@@ -72,7 +73,7 @@ class Store(spark: SparkSession,
       propTable +=  ("unique_o" -> uniqObj.toString)
 
       data.write.mode(SaveMode.Overwrite).parquet(catalog.dataPath + tableName)
-      LOG.info(s"Processed ($count/$numProperties) : $uri - File: $tableName ($size)")
+      LOG.info(s"Processed ($count/$numProperties) : ${catalog.predicatesId2Str(uri.toInt)} - File: $tableName ($size)")
       catalog.addTable(propTable.toMap)
 
       if (!filterType.equals(GEFIType.NONE)) {
@@ -92,7 +93,7 @@ class Store(spark: SparkSession,
   }
 
   def close(): Unit = {
-    catalog.dictionary.close()
+    catalog.dictionaryStr2Id.close()
   }
 }
 

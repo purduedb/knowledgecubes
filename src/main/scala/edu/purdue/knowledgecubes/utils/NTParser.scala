@@ -14,7 +14,7 @@ object NTParser {
         var sub = parts(0)
         var prop = parts(1)
         var obj = parts(2)
-        RDFTriple(sub.toInt, prop.toInt, obj.toInt)
+        RDFTriple(sub.toInt, prop.toInt, obj)
       })
   }
 }
