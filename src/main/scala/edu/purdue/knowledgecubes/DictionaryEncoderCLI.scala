@@ -38,7 +38,6 @@ object DictionaryEncoderCLI {
 
     // Output file(s)
     val encodedDataset = new PrintWriter(new FileWriter(output))
-    val predicatesFile = new PrintWriter(new FileWriter(localPath + "/predicates_ids.tsv"))
 
     LOG.info(s"Processing N-Triples file $input")
     var counter = 0
@@ -81,7 +80,6 @@ object DictionaryEncoderCLI {
         pId = bytes(counter.toString)
         dictionaryStr2Id.put(bytes(pred), pId)
         dictionaryId2Str.put(pId, bytes(pred))
-        predicatesFile.println(s"$counter\t$pred")
       }
       var obj = parts.slice(2, parts.size).mkString(" ")
       var objIsResource = false
@@ -107,6 +105,5 @@ object DictionaryEncoderCLI {
     dictionaryStr2Id.close()
     dictionaryId2Str.close()
     encodedDataset.close()
-    predicatesFile.close()
   }
 }

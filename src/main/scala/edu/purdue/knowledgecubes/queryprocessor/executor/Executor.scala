@@ -249,7 +249,7 @@ class Executor(catalog: Catalog) {
     val spark = catalog.spark
     val numTuples = catalog.tablesInfo(propName)("numTuples").toLong
     if (!CacheManager.contains(propName)) {
-      val path = catalog.dataPath + catalog.tablesInfo(propName)("tableName")
+      val path = catalog.dataPath + catalog.tablesInfo(propName)("uri")
       var table = spark.read.parquet(path).as[RDFTriple]
       table = Partition.byDefaultCriteria(table)
       table.cache()

@@ -70,7 +70,7 @@ class RDFPropertyIdentifier(catalog: Catalog) {
       verifiedList ++= catalog.tablesInfo.keySet
       for (pr <- verifiedList) {
         if (!CacheManager.contains(pr)) {
-          var table = spark.read.parquet(catalog.dataPath + catalog.tablesInfo(pr)("tableName")).as[RDFTriple]
+          var table = spark.read.parquet(catalog.dataPath + catalog.tablesInfo(pr)("uri")).as[RDFTriple]
           table = Partition.byDefaultCriteria(table)
           table.cache()
           val numTuples = catalog.tablesInfo(pr)("numTuples").toString.toLong
@@ -81,7 +81,7 @@ class RDFPropertyIdentifier(catalog: Catalog) {
       for (pr <- identifiedProperties) {
         var table : Dataset[RDFTriple] = spark.emptyDataset[RDFTriple]
         if (!CacheManager.contains(pr)) {
-          table = spark.read.parquet(catalog.dataPath + catalog.tablesInfo(pr)("tableName")).as[RDFTriple]
+          table = spark.read.parquet(catalog.dataPath + catalog.tablesInfo(pr)("uri")).as[RDFTriple]
           table.cache()
           val numTuples = catalog.tablesInfo(pr)("numTuples").toString.toLong
           CacheManager.add(new CacheEntry(pr, numTuples, ORIGINAL, table))

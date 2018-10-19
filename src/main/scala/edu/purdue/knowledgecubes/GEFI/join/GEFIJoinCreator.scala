@@ -22,7 +22,7 @@ class GEFIJoinCreator(spark: SparkSession, dbPath: String, localPath: String) {
     val propertyList = catalog.tablesInfo.keySet
 
     for (uri <- propertyList) {
-      val fileName = catalog.tablesInfo(uri)("tableName").toString
+      val fileName = catalog.tablesInfo(uri)("uri").toString
       fileNames += (uri -> fileName)
     }
 

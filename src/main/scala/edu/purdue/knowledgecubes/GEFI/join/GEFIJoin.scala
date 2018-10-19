@@ -18,15 +18,15 @@ class GEFIJoin(catalog: Catalog) {
   def getString(property: String, variable: String, triple: Triple): String = {
     if (triple.getSubject.isVariable && triple.getSubject.getName == variable) {
       if (triple.getPredicate.isVariable) {
-        catalog.tablesInfo(property)("tableName") + "_TRPS"
+        catalog.tablesInfo(property)("uri") + "_TRPS"
       } else {
-        catalog.tablesInfo(triple.getPredicate.toString)("tableName") + "_TRPS"
+        catalog.tablesInfo(triple.getPredicate.toString)("uri") + "_TRPS"
       }
     } else {
       if (triple.getPredicate.isVariable) {
-        catalog.tablesInfo(property)("tableName") + "_TRPO"
+        catalog.tablesInfo(property)("uri") + "_TRPO"
       } else {
-        catalog.tablesInfo(triple.getPredicate.toString)("tableName") + "_TRPO"
+        catalog.tablesInfo(triple.getPredicate.toString)("uri") + "_TRPO"
       }
     }
   }
@@ -45,20 +45,20 @@ class GEFIJoin(catalog: Catalog) {
     }
 
     if (subFilters.nonEmpty) {
-      subFilters -= (catalog.tablesInfo(propName)("tableName") + "_TRPS")
+      subFilters -= (catalog.tablesInfo(propName)("uri") + "_TRPS")
       if(subFilters.nonEmpty) {
         val subList = subFilters.sortWith(_ < _)
-        val subjectFilterName = catalog.tablesInfo(propName)("tableName") +
+        val subjectFilterName = catalog.tablesInfo(propName)("uri") +
           "_TRPS" + "_JOIN_" + subList.mkString("_JOIN_")
         filters += ("s" -> subjectFilterName)
       }
     }
 
     if (objFilters.nonEmpty) {
-      objFilters -= (catalog.tablesInfo(propName)("tableName") + "_TRPO")
+      objFilters -= (catalog.tablesInfo(propName)("uri") + "_TRPO")
       if(objFilters.nonEmpty) {
         val objList = objFilters.sortWith(_ < _)
-        val objectFilterName = catalog.tablesInfo(propName)("tableName") +
+        val objectFilterName = catalog.tablesInfo(propName)("uri") +
           "_TRPO" + "_JOIN_" + objList.mkString("_JOIN_")
         filters += ("o" -> objectFilterName)
       }
@@ -91,6 +91,7 @@ class GEFIJoin(catalog: Catalog) {
       }
       foo(value)
     })
+    current
   }
 
   def getBroadcastedFilters(exceptPropertyName: String,
@@ -120,12 +121,12 @@ class GEFIJoin(catalog: Catalog) {
       val name = parts(0).split("\\_\\s+")(0)
       val col = parts(1)
 
-      val tableName = name
+      val uri = name
       // determine the column of the other property and add to appropriate list
       if (col.equalsIgnoreCase("s")) {
-        all += ((tableName, "s"))
+        all += ((uri, "s"))
       } else {
-        all += ((tableName, "o"))
+        all += ((uri, "o"))
       }
     }
     all

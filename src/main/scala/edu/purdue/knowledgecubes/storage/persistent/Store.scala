@@ -1,11 +1,12 @@
 package edu.purdue.knowledgecubes.storage.persistent
 
-import scala.collection.mutable.Map
+import scala.collection.mutable.{ListBuffer, Map}
 
 import com.typesafe.scalalogging.Logger
 import org.apache.jena.riot.Lang
 import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 import org.apache.spark.sql.functions.col
+import org.fusesource.leveldbjni.JniDBFactory.{asString, bytes}
 import org.slf4j.LoggerFactory
 
 import edu.purdue.knowledgecubes.GEFI.GEFIType
@@ -28,17 +29,16 @@ class Store(spark: SparkSession,
     LOG.info("Identifying Property Based Files ...")
     // Get all unique predicates
     val iter = triplesDataset.select("p").distinct.toLocalIterator
-    var fileNames = Map[String, String]()
-    var fileCounter = 0
 
+    var uris = ListBuffer[String]()
+    var uriCounter = 0
     while (iter.hasNext) {
-      fileCounter += 1
       val uri = iter.next.getInt(0).toString
-      val fileName = fileCounter.toString
-      fileNames += (uri -> fileName)
+      uris += uri
+      uriCounter += 1
     }
 
-    val numProperties = fileCounter
+    val numProperties = uriCounter
     val numTuples = triplesDataset.count
 
     LOG.debug(s"Number of properties : $numProperties")
@@ -51,16 +51,15 @@ class Store(spark: SparkSession,
     var count = 0
     val lang: Lang = Lang.NTRIPLES
 
-    for ((uri, tableName) <- fileNames) {
+    for (uri <- uris) {
       count += 1
       val data = triplesDataset.filter(col("p").equalTo(uri))
       data.cache()
       val size = data.count()
       // Statistics
       val propTable = Map[String, String]()
+      val predicateName = asString(catalog.dictionaryId2Str.get(bytes(uri)))
       propTable += ("uri" -> uri)
-      propTable += ("predicate" -> catalog.predicatesId2Str(uri.toInt))
-      propTable += ("tableName" -> tableName)
       propTable += ("numTuples" -> size.toString)
       propTable += ("ratio" -> (size.toFloat / numTuples.toFloat).toString)
 
@@ -72,13 +71,14 @@ class Store(spark: SparkSession,
       val uniqObj = objData.count()
       propTable +=  ("unique_o" -> uniqObj.toString)
 
-      data.write.mode(SaveMode.Overwrite).parquet(catalog.dataPath + tableName)
-      LOG.info(s"Processed ($count/$numProperties) : ${catalog.predicatesId2Str(uri.toInt)} - File: $tableName ($size)")
+      data.write.mode(SaveMode.Overwrite).parquet(catalog.dataPath + uri)
+      LOG.info(s"Processed ($count/$numProperties) : $predicateName - File: $uri ($size)")
       catalog.addTable(propTable.toMap)
 
       if (!filterType.equals(GEFIType.NONE)) {
-        GEFIJoinUtils.create(filterType, uniqSub, falsePositiveRate, subData, "s", tableName, catalog.localPath)
-        GEFIJoinUtils.create(filterType, uniqObj, falsePositiveRate, objData, "o", tableName, catalog.localPath)
+        val filteredObjData = objData.where(!col("o").startsWith("\""))
+        GEFIJoinUtils.create(filterType, uniqSub, falsePositiveRate, subData, "s", uri, catalog.localPath)
+        GEFIJoinUtils.create(filterType, uniqObj, falsePositiveRate, filteredObjData, "o", uri, catalog.localPath)
       }
       data.unpersist()
     }
