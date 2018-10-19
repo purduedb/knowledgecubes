@@ -23,10 +23,6 @@ class Catalog(val localPath: String, val dbPath: String, val spark: SparkSession
   options.createIfMissing(false)
   var dictionaryStr2Id: DB = factory.open(new File(localPath + "/dictionary/Str2Id"), options)
   var dictionaryId2Str: DB = factory.open(new File(localPath + "/dictionary/Id2Str"), options)
-  var predicatesId2Str: Map[Int, String] = Source.fromFile(localPath + "/predicates_ids.tsv").
-                                                getLines().
-                                                map(_.split("\t")).
-                                                map(arr => arr(0).toInt->arr(1)).toMap
   val dataPath: String = dbPath + "/data/"
   val joinReductionsPath: String = dbPath + "/reductions/join/"
   var dbInfo: Map[String, String] = Map[String, String]()
