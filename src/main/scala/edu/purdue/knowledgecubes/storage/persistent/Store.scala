@@ -60,6 +60,7 @@ class Store(spark: SparkSession,
       val propTable = Map[String, String]()
       val predicateName = asString(catalog.dictionaryId2Str.get(bytes(uri)))
       propTable += ("uri" -> uri)
+      propTable += ("predicate" -> predicateName)
       propTable += ("numTuples" -> size.toString)
       propTable += ("ratio" -> (size.toFloat / numTuples.toFloat).toString)
 
