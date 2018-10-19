@@ -77,12 +77,12 @@ class GEFIJoin(catalog: Catalog) {
         val filters = ListBuffer[GEFI]()
         for (entry <- all) {
           if (column == "s") {
-            if (!broadcastVariable.value(entry._1).get(entry._2).contains(value.s)) {
+            if (!broadcastVariable.value.get(entry._1).get(entry._2).contains(value.s)) {
               return false
             }
           } else {
             if (!value.o.startsWith("\"") &&
-              !broadcastVariable.value(entry._1).get(entry._2).contains(value.o.toInt)) {
+              !broadcastVariable.value.get(entry._1).get(entry._2).contains(value.o.toInt)) {
               return false
             }
           }
