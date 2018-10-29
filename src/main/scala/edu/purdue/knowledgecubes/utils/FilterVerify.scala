@@ -8,7 +8,7 @@ object FilterVerify {
 
   def main(args: Array[String]): Unit = {
 
-    val path = "output/sample/GEFI/join/BLOOM/0.001/"
+    val path = "output/sample/GEFI/join/ROARING/0.0/"
     val fileName = "example"
     val f = new File(path)
     f.mkdirs()

@@ -1,0 +1,9 @@
+PREFIX f: <java:edu.purdue.knowledgecubes.queryprocessor.spatial.SpatialFunctions.>
+
+SELECT ?t
+{
+    ?x <http://twitter.com/resources/tweet> ?t .
+    ?t <http://yago-knowledge.org/resource/hasLatitude> ?lat .
+    ?t <http://yago-knowledge.org/resource/hasLongitude> ?lon .
+    FILTER f:within(?lon, ?lat, "20", "10", "20", "10")
+}

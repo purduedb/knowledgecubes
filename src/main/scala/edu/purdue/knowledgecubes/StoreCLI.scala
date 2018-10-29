@@ -24,7 +24,7 @@ object StoreCLI {
     val localPath = params("local")
     val dbPath = params("db")
     val ntPath = params("ntriples")
-    val ftype = params("ftype")
+    val ftype = params("fType")
     val fp = params("fp").toDouble
 
     val falsePositiveRate = fp

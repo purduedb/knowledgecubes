@@ -9,7 +9,7 @@ import net.jcazevedo.moultingyaml._
 import net.jcazevedo.moultingyaml.DefaultYamlProtocol._
 import org.apache.spark.broadcast.Broadcast
 import org.apache.spark.sql.SparkSession
-import org.fusesource.leveldbjni.JniDBFactory.{asString, factory}
+import org.fusesource.leveldbjni.JniDBFactory.factory
 import org.iq80.leveldb.{DB, Options}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -26,11 +26,13 @@ class Catalog(val localPath: String, val dbPath: String, val spark: SparkSession
   val dataPath: String = dbPath + "/data/"
   val joinReductionsPath: String = dbPath + "/reductions/join/"
   var dbInfo: Map[String, String] = Map[String, String]()
+  var spatialInfo: Map[Int, Long] = Map[Int, Long]()
   var tablesInfo: Map[String, Map[String, String]] = Map[String, Map[String, String]]()
   var joinReductionsInfo: Map[String, Long] = Map[String, Long]()
   var cardinalities: Map[String, Long] = Map[String, Long]()
   var joinFilters: Map[String, Map[String, GEFI]] = Map[String, Map[String, GEFI]]()
-  var broadcastFilters: Broadcast[Map[String, Map[String, GEFI]]] = _
+  var broadcastJoinFilters: Broadcast[Map[String, Map[String, GEFI]]] = _
+  var broadcastSpatialFilters: Broadcast[Map[Long, GEFI]] = _
   var filterType: GEFIType.Value = GEFIType.NONE
 
   def loadConfigurations(): Unit = {
@@ -56,6 +58,16 @@ class Catalog(val localPath: String, val dbPath: String, val spark: SparkSession
       tablesInfo += (doc("uri") -> doc)
       cardinalities += (doc("uri") -> doc("numTuples").toLong)
     }
+    LOG.debug(this.tablesInfo.toString)
+
+    if (Files.exists(Paths.get(localPath + "/spatial-resources.yaml"))) {
+      val spatialFile = Source.fromFile(localPath + "/spatial-resources.yaml")
+      val spatialDoc = spatialFile.mkString
+      spatialInfo = spatialDoc.parseYaml.convertTo[Map[Int, Long]]
+      LOG.debug(this.spatialInfo.toString)
+      spatialFile.close()
+    }
+
     dbFile.close()
     tablesFile.close()
   }

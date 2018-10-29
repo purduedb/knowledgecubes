@@ -2,14 +2,10 @@
 <http://twitter.com/resources/Tweet2> <http://twitter.com/resources/hasText> "Tweet2"@fr .
 <http://twitter.com/resources/Tweet3> <http://twitter.com/resources/hasText> "Tweet3" .
 <http://twitter.com/resources/Tweet4> <http://twitter.com/resources/hasText> "Tweet4" .
-<http://twitter.com/resources/Tweet1> <http://yago-knowledge.org/resource/hasLatitude> "10" .
-<http://twitter.com/resources/Tweet2> <http://yago-knowledge.org/resource/hasLatitude> "30" .
-<http://twitter.com/resources/Tweet3> <http://yago-knowledge.org/resource/hasLatitude> "50" .
-<http://twitter.com/resources/Tweet4> <http://yago-knowledge.org/resource/hasLatitude> "70" .
-<http://twitter.com/resources/Tweet1> <http://yago-knowledge.org/resource/hasLongitude> "20" .
-<http://twitter.com/resources/Tweet2> <http://yago-knowledge.org/resource/hasLongitude> "40" .
-<http://twitter.com/resources/Tweet3> <http://yago-knowledge.org/resource/hasLongitude> "60" .
-<http://twitter.com/resources/Tweet4> <http://yago-knowledge.org/resource/hasLongitude> "80" .
+<http://twitter.com/resources/Tweet1> <http://www.opengis.net/ont/geosparql#asWKT> "POINT(20 10)"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .
+<http://twitter.com/resources/Tweet2> <http://www.opengis.net/ont/geosparql#asWKT> "POINT(40 30)"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .
+<http://twitter.com/resources/Tweet3> <http://www.opengis.net/ont/geosparql#asWKT> "POINT(60 50)"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .
+<http://twitter.com/resources/Tweet4> <http://www.opengis.net/ont/geosparql#asWKT> "POINT(80 70)"^^<http://www.opengis.net/ont/geosparql#wktLiteral> .
 <http://twitter.com/resources/John> <http://twitter.com/resources/mention> <http://twitter.com/resources/Mary> .
 <http://twitter.com/resources/Mary> <http://twitter.com/resources/mention> <http://twitter.com/resources/Mary> .
 <http://twitter.com/resources/John> <http://twitter.com/resources/mention> <http://twitter.com/resources/Mike> .

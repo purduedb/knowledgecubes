@@ -7,8 +7,8 @@ import scala.collection.mutable.ListBuffer
 
 import com.typesafe.scalalogging.Logger
 import org.apache.spark.sql.{Row, SaveMode, SparkSession}
-import org.slf4j.LoggerFactory
 import org.fusesource.leveldbjni.JniDBFactory.{asString, bytes}
+import org.slf4j.LoggerFactory
 
 import edu.purdue.knowledgecubes.GEFI.{GEFI, GEFIType}
 import edu.purdue.knowledgecubes.metadata.{Catalog, Result}
@@ -66,8 +66,61 @@ class QueryProcessor(spark: SparkSession,
   def loadFilters(filterType: GEFIType.Value, falsePositiveRate: Double): Unit = {
     val joinFilters = loadJoinFilters(filterType, falsePositiveRate)
     if (joinFilters.isDefined) {
-      LOG.debug("Broadcasting Join Filters")
-      catalog.broadcastFilters = spark.sparkContext.broadcast(joinFilters.get)
+      LOG.info("Loading Join Filters")
+      catalog.broadcastJoinFilters = spark.sparkContext.broadcast(joinFilters.get)
+    }
+  }
+
+  def loadSpatialStructures(): Unit = {
+    LOG.info("Creating Spatial Index")
+
+    val rawDf = catalog.spark.read.parquet(catalog.dbPath + "/spatial")
+    rawDf.createOrReplaceTempView("rawDf")
+    val pointDf = catalog.spark.sql(s"""
+                                       |SELECT s, ST_GeomFromWKT(rawDf.geom) AS geom
+                                       |FROM rawDf
+                                    """.stripMargin)
+    pointDf.createOrReplaceTempView("pointDf")
+    pointDf.cache()
+    val numPoints = pointDf.count()
+    LOG.info(s"Indexed: $numPoints")
+    val spatialFilters = loadSpatialFilters(GEFIType.ROARING, 0)
+    if (spatialFilters.isDefined) {
+      LOG.info("Loading Spatial Filters")
+      catalog.broadcastSpatialFilters = spark.sparkContext.broadcast(spatialFilters.get)
+    }
+  }
+
+  private def loadSpatialFilters(filterType: GEFIType.Value,
+                              falsePositiveRate: Double): Option[Map[Long, GEFI]] = {
+    val fullPath = catalog.localPath + "/GEFI/spatial/" + filterType.toString + "/" + falsePositiveRate.toString
+    val folder = new File(fullPath)
+    val listOfFiles = folder.listFiles
+    LOG.debug("Loading " + listOfFiles.length + " Spatial Filters")
+
+    if (folder.exists()) {
+      val spatialFilters = mutable.Map[Long, GEFI]()
+      for (fileEntry <- listOfFiles) {
+        if (fileEntry.isFile) {
+          val name = fileEntry.getName
+          try {
+            val fin = new FileInputStream(new File(fullPath + "/" + name))
+            val ois = new ObjectInputStream(fin)
+            val filter = ois.readObject.asInstanceOf[GEFI]
+            spatialFilters += (catalog.spatialInfo(name.toInt) -> filter)
+          } catch {
+            case e: ClassNotFoundException =>
+              e.printStackTrace()
+            case e: FileNotFoundException =>
+              e.printStackTrace()
+            case e: IOException =>
+              e.printStackTrace()
+          }
+        }
+      }
+      Some(spatialFilters.map{case (key, value) => (key, value)}.toMap)
+    } else {
+      None
     }
   }
 
@@ -76,7 +129,7 @@ class QueryProcessor(spark: SparkSession,
     val fullPath = catalog.localPath + "/GEFI/join/" + filterType.toString + "/" + falsePositiveRate.toString
     val folder = new File(fullPath)
     val listOfFiles = folder.listFiles
-    LOG.debug("Loading " + listOfFiles.length + " GEFI")
+    LOG.debug("Loading " + listOfFiles.length + " Join Filters")
 
     if (folder.exists()) {
       val joinFilters = mutable.Map[String, mutable.Map[String, GEFI]]()
@@ -158,10 +211,14 @@ object QueryProcessor {
             dbPath: String,
             localPath: String,
             filterType: GEFIType.Value,
-            falsePositiveRate: Double): QueryProcessor = {
+            falsePositiveRate: Double,
+            spatialSupport: Boolean): QueryProcessor = {
     val qp = new QueryProcessor(spark, dbPath, localPath, filterType, falsePositiveRate)
     if (filterType != GEFIType.NONE) {
       qp.loadFilters(filterType, falsePositiveRate)
+    }
+    if (spatialSupport) {
+      qp.loadSpatialStructures()
     }
     qp
   }

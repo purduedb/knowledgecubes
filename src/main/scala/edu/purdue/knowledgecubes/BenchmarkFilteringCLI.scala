@@ -14,7 +14,6 @@ import org.slf4j.LoggerFactory
 
 import edu.purdue.knowledgecubes.GEFI.GEFIType
 import edu.purdue.knowledgecubes.queryprocessor.QueryProcessor
-import edu.purdue.knowledgecubes.storage.cache.CacheManager
 import edu.purdue.knowledgecubes.utils.CliParser
 
 object BenchmarkFilteringCLI {
@@ -31,7 +30,7 @@ object BenchmarkFilteringCLI {
     val dbPath = params("db")
     val localPath = params("local")
     var queriesPath = params("queries")
-    val ftype = params("ftype")
+    val ftype = params("fType")
     val fp = params("fp").toDouble
 
     val falsePositiveRate = fp
@@ -67,10 +66,10 @@ object BenchmarkFilteringCLI {
       printer.println(s"Name\tNumResults\tExecTime\tOrig\tRed\tMaxJoins\tnumTriples\tisWarm")
 
       new File(localPath + s"/join-reductions.yaml").delete()
-      var queryProcessor = QueryProcessor(spark, dbPath, localPath, filterType, falsePositiveRate)
+      var queryProcessor = QueryProcessor(spark, dbPath, localPath, filterType, falsePositiveRate, false)
 
-      // To force broadcasting of required filters, the query needs to run first
-      LOG.info(s"Forcing broadcast of filters (Needed for benchmark purposes only) ...")
+      // To force broadcasting of required resources, the query needs to run first
+      LOG.info(s"Forcing broadcast of resources (Needed for benchmark purposes only) ...")
       for (qryFile <- queries) {
         numQueries += 1
         val qryName: String = qryFile.split("\\.")(0)

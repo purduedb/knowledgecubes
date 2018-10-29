@@ -13,7 +13,7 @@ object SpatialExample {
                   SELECT ?placeName
                   {
                       ?place rdfs:label ?placeName
-                      FILTER f:contains("10","20","10","10","10","10")
+                      FILTER f:within("10","20","10","10","10","10")
                   }"""
 
     val opRoot = Parser.parse(query)

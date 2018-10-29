@@ -1,0 +1,28 @@
+1 2 "Tweet1"@en
+3 2 "Tweet2"@fr
+4 2 "Tweet3"
+5 2 "Tweet4"
+1 6 "POINT(20 10)"^^<http://www.opengis.net/ont/geosparql#wktLiteral>
+3 6 "POINT(40 30)"^^<http://www.opengis.net/ont/geosparql#wktLiteral>
+4 6 "POINT(60 50)"^^<http://www.opengis.net/ont/geosparql#wktLiteral>
+5 6 "POINT(80 70)"^^<http://www.opengis.net/ont/geosparql#wktLiteral>
+7 8 9
+9 8 9
+7 8 10
+11 8 9
+7 12 1
+10 12 3
+10 12 4
+11 12 5
+11 13 14
+10 13 15
+16 13 17
+11 18 7
+10 18 11
+16 18 11
+16 18 10
+7 18 10
+11 19 1
+10 19 3
+16 19 4
+16 19 5

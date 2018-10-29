@@ -26,7 +26,7 @@ KC provide spark-based API for issuing RDF related operations. There are three s
 
 #### Dictionary Encoding 
 
-KC requires that the dataset be dictionary encoded. The dictionary encoding allows adding resources (subjects or objects) as integers to the filters. 
+KC requires that the dataset be dictionary encoded. The dictionary encoding allows adding resources (subjects or objects) as integers to the resources. 
 
 ```bash
 java -cp target/uber-knowledgecubes-0.1.0.jar edu.purdue.knowledgecubes.DictionaryEncoderCLI -i [NT File] -o [Output File] -l [Local Path for the new store] -s space
@@ -96,7 +96,7 @@ val r = queryProcessor.sparql(query)
 
 #### Constructing Filters
 
-Additionaly, KC provides an API for creating additional filters. KC provides exact and approximate structures for filtering data. Currently KC supports ```GEFIType.BLOOM```, ```GEFIType.ROARING```, and ```GEFIType.BITSET```.
+Additionaly, KC provides an API for creating additional resources. KC provides exact and approximate structures for filtering data. Currently KC supports ```GEFIType.BLOOM```, ```GEFIType.ROARING```, and ```GEFIType.BITSET```.
 
 ```scala
 import org.apache.spark.sql.SparkSession
@@ -122,7 +122,7 @@ filter.create(filterType, fp)
 
 KC provides a set of benchmarking classes
 
-* **BenchmarkFilteringCLI:** For benchmarking the query execution when using filters
+* **BenchmarkFilteringCLI:** For benchmarking the query execution when using resources
 * **BenchamrkReductionsCLI:** For benchmarking the query execution when using reductions only
 
     

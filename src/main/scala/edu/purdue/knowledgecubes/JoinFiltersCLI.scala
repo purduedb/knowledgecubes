@@ -8,20 +8,20 @@ import edu.purdue.knowledgecubes.GEFI.GEFIType
 import edu.purdue.knowledgecubes.GEFI.join.GEFIJoinCreator
 import edu.purdue.knowledgecubes.utils.{CliParser, Timer}
 
-object FilterCLI {
+object JoinFiltersCLI {
 
   val LOG = Logger(LoggerFactory.getLogger(getClass))
 
   def main(args: Array[String]): Unit = {
-    val params = CliParser.parseFilter(args)
+    val params = CliParser.parseGEFIFiltering(args)
     val spark = SparkSession.builder
-      .appName(s"Knowledge Cubes Filters Creator")
+      .appName(s"Join Filters Creator")
       .getOrCreate()
 
     val dbPath = params("db")
     val localPath = params("local")
     val fp = params("fp").toDouble
-    val ftype = params("ftype")
+    val ftype = params("fType")
 
     var filterType = GEFIType.BLOOM
     if (ftype == "roaring") {

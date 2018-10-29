@@ -71,7 +71,7 @@ class GEFIJoin(catalog: Catalog) {
               semanticFilter: String,
               current: Dataset[RDFTriple]): Dataset[RDFTriple] = {
     val all = getBroadcastedFilters(queryProperty, column, semanticFilter)
-    val broadcastVariable = catalog.broadcastFilters
+    val broadcastVariable = catalog.broadcastJoinFilters
     current.filter(value => {
       def foo(value: RDFTriple): Boolean = {
         val filters = ListBuffer[GEFI]()
@@ -91,7 +91,6 @@ class GEFIJoin(catalog: Catalog) {
       }
       foo(value)
     })
-    current
   }
 
   def getBroadcastedFilters(exceptPropertyName: String,

@@ -9,7 +9,10 @@ import scala.io.Source
 import scala.util.Sorting
 
 import com.typesafe.scalalogging.Logger
+import org.apache.spark.serializer.KryoSerializer
 import org.apache.spark.sql.SparkSession
+import org.datasyslab.geospark.serde.GeoSparkKryoRegistrator
+import org.datasyslab.geosparksql.utils.GeoSparkSQLRegistrator
 import org.slf4j.LoggerFactory
 
 import edu.purdue.knowledgecubes.GEFI.GEFIType
@@ -25,13 +28,18 @@ object QueryCLI {
     val spark = SparkSession.builder
       .appName(s"Knowledge Cubes Query")
       .config("spark.sql.inMemoryColumnarStorage.batchSize", "20000")
+      .config("spark.serializer", classOf[KryoSerializer].getName)
+      .config("spark.kryo.registrator", classOf[GeoSparkKryoRegistrator].getName)
       .getOrCreate()
+
+    GeoSparkSQLRegistrator.registerAll(spark)
 
     val dbPath = params("db")
     val localPath = params("local")
     var queriesPath = params("queries")
-    val ftype = params("ftype")
+    val ftype = params("fType")
     val fp = params("fp").toDouble
+    val spatial = params("spatial")
 
     val directory = new File(localPath)
     if (!directory.exists) {
@@ -47,6 +55,11 @@ object QueryCLI {
       filterType = GEFIType.ROARING
     } else if (ftype == "bitset") {
       filterType = GEFIType.BITSET
+    }
+
+    var spatialSupport = false
+    if(spatial.equals("y")) {
+      spatialSupport = true
     }
 
     LOG.info(s"GEFI: $filterType")
@@ -71,7 +84,7 @@ object QueryCLI {
 
       printer.println(s"Name\tNumResults\tExecTime\tOrig\tRed\tMaxJoins\tnumTriples\tisWarm")
 
-      val queryProcessor = QueryProcessor(spark, dbPath, localPath, filterType, falsePositiveRate)
+      val queryProcessor = QueryProcessor(spark, dbPath, localPath, filterType, falsePositiveRate, spatialSupport)
       for (qryFile <- queries) {
         numQueries += 1
         val qryName: String = qryFile.split("\\.")(0)
@@ -85,7 +98,7 @@ object QueryCLI {
           r.maxJoins + "\t" +
           r.numTriples + "\t"
           + r.isWarm)
-        println(s"${r.execTime}ms (${r.numResults})")
+        println(s"$qryName: ${r.execTime}ms (${r.numResults}) ${r.reductionSizes}/${r.tableSizes}")
       }
       queryProcessor.close()
       printer.close()
@@ -93,8 +106,6 @@ object QueryCLI {
       case exp: IOException =>
         exp.printStackTrace()
     }
-
-    spark.stop
   }
 
   def rep[A](n: Int)(f: => A) { if (n > 0) { f; rep(n-1)(f) } }

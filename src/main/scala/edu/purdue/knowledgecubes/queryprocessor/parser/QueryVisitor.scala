@@ -21,7 +21,7 @@ class QueryVisitor extends OpVisitorBase {
   override  def visit(opFilter: OpFilter): Unit = {
      val func = opFilter.getExprs.getList.get(0).getFunction
      if(func.getFunctionName(null)
-       .toLowerCase.equals("<java:edu.purdue.knowledgecubes.queryprocessor.spatial.spatialfunctions.contains>")) {
+       .toLowerCase.equals("<java:edu.purdue.knowledgecubes.queryprocessor.spatial.spatialfunctions.within>")) {
        spatialFilters += func
      }
    }

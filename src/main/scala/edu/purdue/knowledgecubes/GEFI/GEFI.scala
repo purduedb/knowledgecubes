@@ -23,7 +23,7 @@ class GEFI(val filterType: GEFIType.Value, val size: Long, val falsePositiveRate
     filter = new mutable.BitSet()
   }
 
-  def add(elem: Integer): Unit = {
+  def add(elem: Int): Unit = {
     if (filterType == GEFIType.BLOOM) {
       filter.asInstanceOf[BloomFilter[Integer]].add(elem)
     } else if (filterType == GEFIType.ROARING) {
@@ -54,6 +54,10 @@ class GEFI(val filterType: GEFIType.Value, val size: Long, val falsePositiveRate
       filter.asInstanceOf[mutable.BitSet] ++= filter.asInstanceOf[mutable.BitSet]
     }
     this
+  }
+
+  def elements(): Array[Int] = {
+    filter.asInstanceOf[RoaringBitmap].toArray
   }
 
   override def toString: String = {

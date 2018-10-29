@@ -4,7 +4,6 @@ import java.io._
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.catalyst.InternalRow
-import org.apache.spark.sql.types.StringType
 
 import edu.purdue.knowledgecubes.GEFI.{GEFI, GEFIType}
 

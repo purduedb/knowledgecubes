@@ -6,11 +6,14 @@ object CliParser {
   case class Config(ntriples: String = "",
                     encoded: String = "",
                     separator: String = "",
+                    dataset: String = "",
+                    stype: String = "",
                     local: String = "",
                     db: String = "",
                     queries: String = "",
                     fp: String = "",
-                    ftype: String = "")
+                    ftype: String = "",
+                    spatial: String = "")
 
   private val loaderParser = new scopt.OptionParser[Config]("StoreCLI") {
     head("Knowledge Cubes Store Creator", "0.1.0")
@@ -26,11 +29,11 @@ object CliParser {
       action((x, c) => c.copy(db = x)).
       text("Database directory")
 
-    opt[String]('f', "fp").required().valueName("<path>").
+    opt[String]('f', "fp").required().valueName("rate").
       action((x, c) => c.copy(fp = x)).
       text("False positive rate")
 
-    opt[String]('t', "ftype").required().valueName("<path>").
+    opt[String]('t', "fType").required().valueName("type").
       action((x, c) => c.copy(ftype = x)).
       text("GEFI type (bloom, roaring, bitset)")
 
@@ -51,9 +54,9 @@ object CliParser {
       action((x, c) => c.copy(encoded = x)).
       text("Encoded File")
 
-    opt[String]('s', "separator").required().valueName("<path>").
+    opt[String]('s', "separator").required().valueName("(tab | space)").
       action((x, c) => c.copy(separator = x)).
-      text("Separator (tab,space)")
+      text("Separator (tab | space)")
 
     help("help").text("prints this usage text")
   }
@@ -74,19 +77,24 @@ object CliParser {
       action((x, c) => c.copy(queries = x)).
       text("Query Directory")
 
-    opt[String]('f', "fp").required().valueName("<path>").
+    opt[String]('f', "fp").required().valueName("rate").
       action((x, c) => c.copy(fp = x)).
       text("False positive rate")
 
-    opt[String]('t', "ftype").required().valueName("<path>").
+    opt[String]('t', "fType").required().valueName("(bloom | roaring | bitset)").
       action((x, c) => c.copy(ftype = x)).
       text("GEFI type (bloom, roaring, bitset)")
+
+    opt[String]('s', "spatial").required().valueName("(y | n)").
+      action((x, c) => c.copy(spatial = x)).
+      text("Enable spatial support")
+
 
     help("help").text("prints this usage text")
   }
 
-  private val filterParser = new scopt.OptionParser[Config]("FilterCLI") {
-    head("Knowledge Cubes GEFI Creator", "0.1.0")
+  private val joinFilterParser = new scopt.OptionParser[Config]("JoinFiltersCLI") {
+    head("Knowledge Cubes Join Filters Creator", "0.1.0")
 
     opt[String]('l', "local").required().valueName("<path>").
       action((x, c) => c.copy(local = x)).
@@ -96,17 +104,46 @@ object CliParser {
       action((x, c) => c.copy(db = x)).
       text("Database directory")
 
-    opt[String]('f', "fp").required().valueName("<path>").
+    opt[String]('f', "fp").required().valueName("rate").
       action((x, c) => c.copy(fp = x)).
       text("False positive rate")
 
-    opt[String]('t', "ftype").required().valueName("<path>").
+    opt[String]('t', "fType").required().valueName("(bloom | roaring | bitset)").
       action((x, c) => c.copy(ftype = x)).
       text("GEFI type (bloom, roaring, bitset)")
 
     help("help").text("prints this usage text")
   }
 
+  private val semanticFilterParser = new scopt.OptionParser[Config]("SemanticFiltersCLI") {
+    head("Knowledge Cubes Semantic Filters Creator", "0.1.0")
+
+    opt[String]('l', "local").required().valueName("<path>").
+      action((x, c) => c.copy(local = x)).
+      text("Local directory")
+
+    opt[String]('t', "fType").required().valueName("<path>").
+      action((x, c) => c.copy(ftype = x)).
+      text("GEFI type (bloom, roaring, bitset)")
+
+    opt[String]('f', "fp").required().valueName("<path>").
+      action((x, c) => c.copy(fp = x)).
+      text("False positive rate")
+
+    opt[String]('s', "sType").required().valueName("(spatial | temporal | ontological)").
+      action((x, c) => c.copy(stype = x)).
+      text("Filter Type (spatial, temporal, ontological)")
+
+    opt[String]('r', "dataset").required().valueName("<path>").
+      action((x, c) => c.copy(dataset = x)).
+      text("RDF Dataset (currently supported: yago, lgd)")
+
+    opt[String]('d', "db").required().valueName("<path>").
+      action((x, c) => c.copy(db = x)).
+      text("Database directory")
+
+    help("help").text("prints this usage text")
+  }
 
   def parseLoader(args: Array[String]): Map[String, String] = {
     var parameters = Map[String, String]()
@@ -115,7 +152,7 @@ object CliParser {
         parameters += ("ntriples" -> config.ntriples)
         parameters += ("local" -> config.local)
         parameters += ("db" -> config.db)
-        parameters += ("ftype" -> config.ftype)
+        parameters += ("fType" -> config.ftype)
         parameters += ("fp" -> config.fp)
       case None =>
         println(loaderParser.usage)
@@ -131,8 +168,9 @@ object CliParser {
         parameters += ("local" -> config.local)
         parameters += ("db" -> config.db)
         parameters += ("queries" -> config.queries)
-        parameters += ("ftype" -> config.ftype)
+        parameters += ("fType" -> config.ftype)
         parameters += ("fp" -> config.fp)
+        parameters += ("spatial" -> config.spatial)
       case None =>
         println(executorParser.usage)
         System.exit(1)
@@ -140,16 +178,34 @@ object CliParser {
     parameters
   }
 
-  def parseFilter(args: Array[String]): Map[String, String] = {
+  def parseGEFIFiltering(args: Array[String]): Map[String, String] = {
     var parameters = Map[String, String]()
-    filterParser.parse(args, Config()) match {
+    joinFilterParser.parse(args, Config()) match {
       case Some(config) =>
         parameters += ("local" -> config.local)
         parameters += ("db" -> config.db)
-        parameters += ("ftype" -> config.ftype)
+        parameters += ("fType" -> config.ftype)
         parameters += ("fp" -> config.fp)
       case None =>
-        println(filterParser.usage)
+        println(joinFilterParser.usage)
+        System.exit(1)
+    }
+    parameters
+  }
+
+  def parseSemanticFiltering(args: Array[String]): Map[String, String] = {
+    var parameters = Map[String, String]()
+    semanticFilterParser.parse(args, Config()) match {
+      case Some(config) =>
+        parameters += ("local" -> config.local)
+        parameters += ("fType" -> config.ftype)
+        parameters += ("fp" -> config.fp)
+        parameters += ("sType" -> config.stype)
+        parameters += ("input" -> config.ntriples)
+        parameters += ("dataset" -> config.dataset)
+        parameters += ("db" -> config.db)
+      case None =>
+        println(semanticFilterParser.usage)
         System.exit(1)
     }
     parameters

@@ -9,23 +9,30 @@ import scala.io.Source
 import scala.util.Sorting
 
 import com.typesafe.scalalogging.Logger
+import org.apache.spark.serializer.KryoSerializer
 import org.apache.spark.sql.SparkSession
+import org.datasyslab.geospark.serde.GeoSparkKryoRegistrator
+import org.datasyslab.geosparksql.utils.GeoSparkSQLRegistrator
 import org.slf4j.LoggerFactory
 
-import edu.purdue.knowledgecubes.GEFI.GEFIType
 import edu.purdue.knowledgecubes.queryprocessor.QueryProcessor
+import edu.purdue.knowledgecubes.GEFI.GEFIType
 import edu.purdue.knowledgecubes.utils.CliParser
 
-object BenchmarkReductionsCLI {
+object BenchmarkSpatialCLI {
 
   val LOG = Logger(LoggerFactory.getLogger(getClass))
 
   def main(args: Array[String]): Unit = {
     val params = CliParser.parseExecutor(args)
     val spark = SparkSession.builder
-      .appName(s"Benchmark Reductions")
+      .appName(s"Benchmark Spatial Filtering")
       .config("spark.sql.inMemoryColumnarStorage.batchSize", "20000")
+      .config("spark.serializer", classOf[KryoSerializer].getName)
+      .config("spark.kryo.registrator", classOf[GeoSparkKryoRegistrator].getName)
       .getOrCreate()
+
+    GeoSparkSQLRegistrator.registerAll(spark)
 
     val dbPath = params("db")
     val localPath = params("local")
@@ -64,19 +71,19 @@ object BenchmarkReductionsCLI {
       }
 
       printer.println(s"Name\tNumResults\tExecTime\tOrig\tRed\tMaxJoins\tnumTriples\tisWarm")
-
-      val queryProcessor = QueryProcessor(spark, dbPath, localPath, filterType, falsePositiveRate, false)
+      new File(localPath + s"/join-reductions.yaml").delete()
+      var queryProcessor = QueryProcessor(spark, dbPath, localPath, filterType, falsePositiveRate, true)
 
       // To force broadcasting of required resources, the query needs to run first
       LOG.info(s"Forcing broadcast of resources (Needed for benchmark purposes only) ...")
       for (qryFile <- queries) {
+        numQueries += 1
         val qryName: String = qryFile.split("\\.")(0)
         val qry: String = Source.fromFile(queriesPath + "/" + qryFile).getLines.mkString("\n")
         val r = queryProcessor.benchmark(qry)
       }
-      // Save reductions if it was not created before
-      queryProcessor.saveReductions()
-      // Clear cache to ensure fair benchmarking
+
+      // Delete the reductions file
       queryProcessor.clearCache()
 
       // Benchmark reductions assuming nothing is in memory
@@ -93,10 +100,9 @@ object BenchmarkReductionsCLI {
           r.maxJoins + "\t" +
           r.numTriples + "\t"
           + r.isWarm)
-        println(r.execTime)
+        println(s"$qryName: ${r.execTime}ms (${r.numResults}) ${r.reductionSizes}/${r.tableSizes}")
         queryProcessor.clearCache()
       }
-
       printer.close()
     } catch {
       case exp: IOException =>
@@ -106,5 +112,5 @@ object BenchmarkReductionsCLI {
   }
 
   def rep[A](n: Int)(f: => A) { if (n > 0) { f; rep(n-1)(f) } }
-}
 
+}
