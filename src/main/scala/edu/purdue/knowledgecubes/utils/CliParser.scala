@@ -13,7 +13,8 @@ object CliParser {
                     queries: String = "",
                     fp: String = "",
                     ftype: String = "",
-                    spatial: String = "")
+                    spatial: String = "",
+                    count: String = "")
 
   private val loaderParser = new scopt.OptionParser[Config]("StoreCLI") {
     head("Knowledge Cubes Store Creator", "0.1.0")
@@ -142,6 +143,10 @@ object CliParser {
       action((x, c) => c.copy(db = x)).
       text("Database directory")
 
+    opt[String]('c', "count").required().valueName("<value>").
+      action((x, c) => c.copy(count = x)).
+      text("Maximum number of elements per filter")
+
     help("help").text("prints this usage text")
   }
 
@@ -204,6 +209,7 @@ object CliParser {
         parameters += ("input" -> config.ntriples)
         parameters += ("dataset" -> config.dataset)
         parameters += ("db" -> config.db)
+        parameters += ("count" -> config.count)
       case None =>
         println(semanticFilterParser.usage)
         System.exit(1)

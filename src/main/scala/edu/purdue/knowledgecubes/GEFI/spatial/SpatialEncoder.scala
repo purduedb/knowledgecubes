@@ -47,10 +47,11 @@ object SpatialEncoder {
     cells.toList
   }
 
-  def createFilters(encodedPoints: Map[Long, Int], theshold: Int, localPath: String): Map[Int, List[Int]] = {
+  def createFilters(encodedPoints: Map[Long, Int], filtersCount: Int, localPath: String): Map[Int, List[Int]] = {
     var intervals = mutable.Map[String, Map[String, String]]()
     val sorted = encodedPoints.keySet.toArray.sortWith(_ < _)
-    val bins = sorted.grouped(theshold)
+    val numElements = encodedPoints.size / filtersCount
+    val bins = sorted.grouped(numElements)
 
     val supp: Supplier[BigInteger] = new Supplier[BigInteger]() {
       override def get(): BigInteger = BigInteger.valueOf(0)

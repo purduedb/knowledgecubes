@@ -14,7 +14,6 @@ import edu.purdue.knowledgecubes.utils.CliParser
 object SemanticFiltersCLI {
 
   val LOG = Logger(LoggerFactory.getLogger(getClass))
-  val threshold = 300
 
   def main(args: Array[String]): Unit = {
 
@@ -30,6 +29,8 @@ object SemanticFiltersCLI {
     val input = params("input")
     val dataset = params("dataset")
     val dbPath = params("db")
+    val count = params("count")
+
 
     var filterType = GEFIType.BLOOM
     if (fType == "roaring") {
@@ -43,6 +44,7 @@ object SemanticFiltersCLI {
     }
 
     val falsePositiveRate = fp.toFloat
+    val maxNumFilters = count.toInt
 
     if (sType.equals("spatial")) {
       LOG.info("Processing Spatial Data")
@@ -54,7 +56,7 @@ object SemanticFiltersCLI {
         LOG.error("Unsupported Dataset")
         System.exit(-1)
       }
-      val filters = SpatialEncoder.createFilters(encodedPoints, 1, localPath)
+      val filters = SpatialEncoder.createFilters(encodedPoints, maxNumFilters, localPath)
       val numFilters = save(filters, filterType, falsePositiveRate, localPath, sType)
       LOG.info(s"Number of Spatial Filters created: $numFilters")
     }
