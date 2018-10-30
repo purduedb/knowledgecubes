@@ -15,8 +15,8 @@ import org.datasyslab.geospark.serde.GeoSparkKryoRegistrator
 import org.datasyslab.geosparksql.utils.GeoSparkSQLRegistrator
 import org.slf4j.LoggerFactory
 
-import edu.purdue.knowledgecubes.queryprocessor.QueryProcessor
 import edu.purdue.knowledgecubes.GEFI.GEFIType
+import edu.purdue.knowledgecubes.queryprocessor.QueryProcessor
 import edu.purdue.knowledgecubes.utils.CliParser
 
 object BenchmarkSpatialCLI {

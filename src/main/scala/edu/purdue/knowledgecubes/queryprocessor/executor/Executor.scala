@@ -192,10 +192,10 @@ class Executor(catalog: Catalog) {
           geomLat = geomLat.withColumnRenamed("o", "o1")
           val joined = geomLon.join(geomLat, geomLat.col("s1").equalTo(geomLon.col("s")))
           val spatialDf = catalog.spark.sql(
-            s"""
-               |SELECT s as matches
-               |FROM pointDf
-               |WHERE ST_Within(pointDf.geom, ST_PolygonFromEnvelope($lon_min, $lat_min, $lon_max, $lat_max))""".stripMargin)
+          s"""
+          |SELECT s as matches
+          |FROM pointDf
+          |WHERE ST_Within(pointDf.geom, ST_PolygonFromEnvelope($lon_min, $lat_min, $lon_max, $lat_max))""".stripMargin)
 
           val res = joined.toDF().join(spatialDf, spatialDf.col("matches").equalTo(joined.col("s")))
 
@@ -209,10 +209,10 @@ class Executor(catalog: Catalog) {
             col("o")).as[RDFTriple])
         } else {
           val spatialDf = catalog.spark.sql(
-            s"""
-               |SELECT s as matches
-               |FROM pointDf
-               |WHERE ST_Within(pointDf.geom, ST_PolygonFromEnvelope($lon_min, $lat_min, $lon_max, $lat_max))""".stripMargin)
+          s"""
+          |SELECT s as matches
+          |FROM pointDf
+          |WHERE ST_Within(pointDf.geom, ST_PolygonFromEnvelope($lon_min, $lat_min, $lon_max, $lat_max))""".stripMargin)
 
           val res = geom.toDF().join(spatialDf, spatialDf.col("matches").equalTo(geom.col("s")))
           dataFrames += (tripleGeom -> res.select(
