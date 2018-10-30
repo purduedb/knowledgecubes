@@ -1,16 +1,15 @@
 package edu.purdue.knowledgecubes.GEFI.spatial.parsers
 
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
-import scala.io.Source
 
 import com.typesafe.scalalogging.Logger
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions.col
 import org.slf4j.LoggerFactory
 
-import edu.purdue.knowledgecubes.metadata.Catalog
 import edu.purdue.knowledgecubes.GEFI.spatial.{SpatialEncoder, SpatialEntry}
+import edu.purdue.knowledgecubes.metadata.Catalog
+
 
 class YAGOSpatialParser(spark: SparkSession, dbPath: String, localPath: String) {
 
@@ -21,9 +20,8 @@ class YAGOSpatialParser(spark: SparkSession, dbPath: String, localPath: String) 
   val catalog = new Catalog(localPath, dbPath, spark)
   catalog.loadConfigurations()
 
-  def parseSpatialData(): mutable.Map[Long, ListBuffer[Int]] = {
+  def parseSpatialData(): Map[Long, Int] = {
     import catalog.spark.implicits._
-    var points = mutable.Map[Int, mutable.Map[String, Double]]()
     val propertyList = catalog.tablesInfo.keySet
     var latId = ""
     var lonId = ""
@@ -55,33 +53,22 @@ class YAGOSpatialParser(spark: SparkSession, dbPath: String, localPath: String) 
     val latEntries = joined.select("s1", "o1").toLocalIterator()
     val lonEntries = joined.select("s", "o").toLocalIterator()
 
+    var points = Map[Int, Double]()
     while (latEntries.hasNext) {
       val latEntry = latEntries.next()
-      var entry = mutable.Map[String, Double]()
-      entry += ("lat" -> latEntry.getString(1).replaceAll("\"", "").toDouble)
-      points += (latEntry.getInt(0) -> entry)
+      points += (latEntry.getInt(0) -> latEntry.getString(1).replaceAll("\"", "").toDouble)
     }
 
+    val encodedPoints = mutable.Map[Long, Int]()
     while (lonEntries.hasNext) {
       val lonEntry = lonEntries.next()
       if (points.contains(lonEntry.getInt(0))) {
-        var entry = points(lonEntry.getInt(0))
-        entry += ("lon" -> lonEntry.getString(1).replaceAll("\"", "").toDouble)
-        points(lonEntry.getInt(0)) = entry
+        var lat = points(lonEntry.getInt(0))
+        var lon = lonEntry.getString(1).replaceAll("\"", "").toDouble
+        val id = SpatialEncoder.encodeLonLat(lon, lat)
+        encodedPoints += (id -> lonEntry.getInt(0))
       }
     }
-
-    val resources = mutable.Map[Long, ListBuffer[Int]]()
-    for( (subject, geom) <- points) {
-      val parentId = SpatialEncoder.encodeLatLon(geom("lon"), geom("lat"))
-      if(resources.contains(parentId)) {
-        resources(parentId) += subject
-      } else {
-        val lst = ListBuffer[Int]()
-        lst += subject
-        resources += (parentId -> lst)
-      }
-    }
-    resources
+    encodedPoints.toMap
   }
 }

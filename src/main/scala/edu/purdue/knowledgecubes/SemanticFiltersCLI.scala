@@ -1,21 +1,20 @@
 package edu.purdue.knowledgecubes
 
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
+import java.io.{File, FileOutputStream, ObjectOutputStream}
 
 import com.typesafe.scalalogging.Logger
-import org.apache.spark.sql.{SaveMode, SparkSession}
+import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
 
-import edu.purdue.knowledgecubes.GEFI.GEFIType
+import edu.purdue.knowledgecubes.GEFI.{GEFI, GEFIType}
 import edu.purdue.knowledgecubes.GEFI.spatial.SpatialEncoder
 import edu.purdue.knowledgecubes.GEFI.spatial.parsers.YAGOSpatialParser
 import edu.purdue.knowledgecubes.utils.CliParser
 
-
 object SemanticFiltersCLI {
 
   val LOG = Logger(LoggerFactory.getLogger(getClass))
+  val threshold = 300
 
   def main(args: Array[String]): Unit = {
 
@@ -47,17 +46,42 @@ object SemanticFiltersCLI {
 
     if (sType.equals("spatial")) {
       LOG.info("Processing Spatial Data")
-      var resources = mutable.Map[Long, ListBuffer[Int]]()
+      var encodedPoints = Map[Long, Int]()
       if (dataset.equals("yago")) {
         val yago = new YAGOSpatialParser(spark, dbPath, localPath)
-        resources = yago.parseSpatialData()
+        encodedPoints = yago.parseSpatialData()
       } else {
         LOG.error("Unsupported Dataset")
         System.exit(-1)
       }
-      val numFilters = SpatialEncoder.save(resources, filterType, falsePositiveRate, localPath)
+      val filters = SpatialEncoder.createFilters(encodedPoints, 1, localPath)
+      val numFilters = save(filters, filterType, falsePositiveRate, localPath, sType)
       LOG.info(s"Number of Spatial Filters created: $numFilters")
     }
   }
 
+  def save(filters: Map[Int, List[Int]],
+           filterType: GEFIType.Value,
+           falsePositiveRate: Float,
+           localPath: String, sType: String): Int = {
+    var counter = 0
+    for ((k, v) <- filters) {
+      counter += 1
+      val filterName = k
+      val filterSize = v.size
+      val filter = new GEFI(filterType, filterSize, falsePositiveRate)
+
+      for (value <- v) {
+        filter.add(value)
+      }
+      val fullPath = localPath + s"/GEFI/${sType}/" + filterType.toString + "/" + falsePositiveRate.toString
+      val directory = new File(fullPath)
+      if (!directory.exists) directory.mkdirs()
+      val fout = new FileOutputStream(fullPath + "/" + filterName)
+      val oos = new ObjectOutputStream(fout)
+      oos.writeObject(filter)
+      oos.close()
+    }
+    counter
+  }
 }

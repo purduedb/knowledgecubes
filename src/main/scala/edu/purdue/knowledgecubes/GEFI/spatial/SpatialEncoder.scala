@@ -1,59 +1,80 @@
 package edu.purdue.knowledgecubes.GEFI.spatial
 
-import java.io.{File, FileOutputStream, ObjectOutputStream, PrintWriter}
+import java.io.PrintWriter
+import java.math.BigInteger
+import java.util.function.Supplier
 
+import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-import scala.collection.JavaConverters._
 
 import com.google.common.geometry._
-import net.jcazevedo.moultingyaml.Flow
+import intervalTree.IntervalTree
 import net.jcazevedo.moultingyaml._
 import net.jcazevedo.moultingyaml.DefaultYamlProtocol._
 
-
-import edu.purdue.knowledgecubes.GEFI.{GEFI, GEFIType}
-
 object SpatialEncoder {
 
-  def encodeLatLon(lon: Double, lat: Double): Long = {
-    val lvl = 3
+  def encodeLonLat(lon: Double, lat: Double, level: Int): Long = {
+    val lvl = level
     var latlng = S2LatLng.fromDegrees(lat, lon)
     var cell = S2CellId.fromLatLng(latlng)
     var parentId = cell.parent(lvl).id()
     parentId
   }
 
-  def save(resources: mutable.Map[Long, ListBuffer[Int]],
-           filterType: GEFIType.Value,
-           falsePositiveRate: Float,
-           localPath: String): Int = {
-    var sfConf = Map[Int, Long]()
+  def encodeLonLat(lon: Double, lat: Double): Long = {
+    val latlng = S2LatLng.fromDegrees(lat, lon)
+    val id = S2CellId.fromLatLng(latlng).id()
+    id
+  }
+
+  def encodePoints(list: List[(Double, Double)]): List[Long] = {
+    val loop = ListBuffer[S2Point]()
+    for (entry <- list) {
+      val point = new S2Point(entry._2, entry._1, 0)
+      loop += point
+    }
+    val s2Loop = new S2Loop(loop.asJava)
+    val coverer = new S2RegionCoverer()
+    val union = coverer.getCovering(s2Loop)
+    val matchingCells = union.cellIds().asScala
+    val cells = ListBuffer[Long]()
+    for(c <- matchingCells) {
+      val id = c.id()
+      cells += id
+    }
+    cells.toList
+  }
+
+  def createFilters(encodedPoints: Map[Long, Int], theshold: Int, localPath: String): Map[Int, List[Int]] = {
+    var intervals = mutable.Map[String, Map[String, String]]()
+    val sorted = encodedPoints.keySet.toArray.sortWith(_ < _)
+    val bins = sorted.grouped(theshold)
+
+    val supp: Supplier[BigInteger] = new Supplier[BigInteger]() {
+      override def get(): BigInteger = BigInteger.valueOf(0)
+    }
+
     var counter = 0
-
-    for ((k, v) <- resources) {
+    val tree = new IntervalTree[BigInteger, Int](supp)
+    val filters = mutable.Map[Int, List[Int]]()
+    while(bins.hasNext) {
+      val intervalInfo = mutable.Map[String, String]()
       counter += 1
-      sfConf += (counter -> k)
-      val filterName = counter
-      val filterSize = v.size
-      val filter = new GEFI(filterType, filterSize, falsePositiveRate)
+      val lst = bins.next()
+      tree.addInterval(BigInteger.valueOf(lst.head), BigInteger.valueOf(lst.last), counter)
+      filters += (counter -> lst.map(x => encodedPoints(x)).toList)
+      // Save intervalInfo info for reconstruction
+      intervalInfo += ("id" -> counter.toString)
+      intervalInfo += ("begin" -> lst.head.toString)
+      intervalInfo += ("end" -> lst.last.toString)
+      intervals += (counter.toString -> intervalInfo.toMap)
+    }
 
-      for (value <- v) {
-        filter.add(value)
-      }
-      val fullPath = localPath + "/GEFI/spatial/" + filterType.toString + "/" + falsePositiveRate.toString
-      val directory = new File(fullPath)
-      if (!directory.exists) directory.mkdirs()
-      val fout = new FileOutputStream(fullPath + "/" + filterName)
-      val oos = new ObjectOutputStream(fout)
-      oos.writeObject(filter)
-      oos.close()
-    }
-    // Save resources information
-    val confFile = localPath + "/spatial-resources.yaml"
-    new PrintWriter(confFile) {
-      write(sfConf.toYaml.print(flowStyle = Flow)); close()
-    }
-    counter
+    new PrintWriter(localPath +
+      "/spatial-intervals.yaml") { write(intervals.values.toYaml.print(flowStyle = Block)); close() }
+
+    filters.toMap
   }
 }

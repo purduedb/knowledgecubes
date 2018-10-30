@@ -13,7 +13,7 @@ import org.fusesource.leveldbjni.JniDBFactory.factory
 import org.iq80.leveldb.{DB, Options}
 import org.slf4j.{Logger, LoggerFactory}
 
-import edu.purdue.knowledgecubes.GEFI.{GEFI, GEFIType}
+import edu.purdue.knowledgecubes.GEFI.{GEFI, GEFIIndex, GEFIType}
 
 class Catalog(val localPath: String, val dbPath: String, val spark: SparkSession) {
 
@@ -26,7 +26,8 @@ class Catalog(val localPath: String, val dbPath: String, val spark: SparkSession
   val dataPath: String = dbPath + "/data/"
   val joinReductionsPath: String = dbPath + "/reductions/join/"
   var dbInfo: Map[String, String] = Map[String, String]()
-  var spatialInfo: Map[Int, Long] = Map[Int, Long]()
+  var spatialInfo: Map[String, Map[String, String]] = Map[String, Map[String, String]]()
+  val spatialIndex: GEFIIndex = new GEFIIndex()
   var tablesInfo: Map[String, Map[String, String]] = Map[String, Map[String, String]]()
   var joinReductionsInfo: Map[String, Long] = Map[String, Long]()
   var cardinalities: Map[String, Long] = Map[String, Long]()
@@ -60,10 +61,17 @@ class Catalog(val localPath: String, val dbPath: String, val spark: SparkSession
     }
     LOG.debug(this.tablesInfo.toString)
 
-    if (Files.exists(Paths.get(localPath + "/spatial-resources.yaml"))) {
-      val spatialFile = Source.fromFile(localPath + "/spatial-resources.yaml")
+    if (Files.exists(Paths.get(localPath + "/spatial-intervals.yaml"))) {
+      val spatialFile = Source.fromFile(localPath + "/spatial-intervals.yaml")
       val spatialDoc = spatialFile.mkString
-      spatialInfo = spatialDoc.parseYaml.convertTo[Map[Int, Long]]
+      val spatialDocs = spatialDoc.parseYaml
+      tablesFile.close
+
+      val yamlSpatialDocs = spatialDocs.convertTo[Iterable[Map[String, String]]]
+      for(doc <- yamlSpatialDocs) {
+        spatialInfo += (doc("id") -> doc)
+      }
+      spatialIndex.create(spatialInfo)
       LOG.debug(this.spatialInfo.toString)
       spatialFile.close()
     }

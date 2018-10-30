@@ -107,7 +107,7 @@ class QueryProcessor(spark: SparkSession,
             val fin = new FileInputStream(new File(fullPath + "/" + name))
             val ois = new ObjectInputStream(fin)
             val filter = ois.readObject.asInstanceOf[GEFI]
-            spatialFilters += (catalog.spatialInfo(name.toInt) -> filter)
+            spatialFilters += (name.toLong -> filter)
           } catch {
             case e: ClassNotFoundException =>
               e.printStackTrace()

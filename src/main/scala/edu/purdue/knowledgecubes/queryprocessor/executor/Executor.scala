@@ -1,6 +1,5 @@
 package edu.purdue.knowledgecubes.queryprocessor.executor
 
-import scala.collection.JavaConverters._
 import scala.collection.mutable.{HashSet, ListBuffer}
 
 import com.google.common.geometry._
@@ -11,7 +10,7 @@ import org.apache.spark.sql.{Column, DataFrame, Dataset}
 import org.apache.spark.sql.functions.col
 import org.slf4j.LoggerFactory
 
-import edu.purdue.knowledgecubes.GEFI.{GEFI, GEFIType}
+import edu.purdue.knowledgecubes.GEFI.GEFIType
 import edu.purdue.knowledgecubes.GEFI.join.GEFIJoin
 import edu.purdue.knowledgecubes.metadata.{Catalog, Result}
 import edu.purdue.knowledgecubes.partition.Partition
@@ -152,30 +151,17 @@ class Executor(catalog: Catalog) {
           spatialVariable = tripleGeom.getSubject.toString()
         }
 
-        // Determine spatial resources to use
-        val latlng1 = S2LatLng.fromDegrees(lat_min, lon_min)
-        val latlng2 = S2LatLng.fromDegrees(lat_max, lon_max)
-        val matchloc = S2LatLngRect.fromPointPair(latlng1, latlng2)
-        val coverer = new S2RegionCoverer()
-        val union = coverer.getCovering(matchloc)
-        val matchingCells = union.cellIds().asScala
-        val lvl = 3
-        var parentCells = ListBuffer[Long]()
-        val existingParents = catalog.spatialInfo.values.toArray
-        for (cell <- matchingCells) {
-          var parentID = cell.parent(lvl).id()
-          if(existingParents.contains(parentID)) {
-            parentCells += parentID
-          }
-        }
-
+        // Determine spatial filters to use
+        val latlngmin = S2CellId.fromLatLng(S2LatLng.fromDegrees(lat_min, lon_min)).id()
+        val latlngmax = S2CellId.fromLatLng(S2LatLng.fromDegrees(lat_max, lon_max)).id()
+        val matchingCells = catalog.spatialIndex.find(latlngmin, latlngmax)
         val broadcastVariable = catalog.broadcastSpatialFilters
         reductionSizes = 0
         for (tp <- bgpTriples) {
           if (tp.getSubject.isVariable() && tp.getSubject.toString.equals(spatialVariable)) {
             dataFrames += tp -> dataFrames(tp).filter(value => {
               def foo(value: RDFTriple): Boolean = {
-                for (entry <- parentCells) {
+                for (entry <- matchingCells) {
                   if (broadcastVariable.value.get(entry).get.contains(value.s)) {
                     return true
                   }
@@ -187,7 +173,7 @@ class Executor(catalog: Catalog) {
           } else if (tp.getObject.isVariable() && tp.getObject.toString.equals(spatialVariable)) {
             dataFrames += tp -> dataFrames(tp).filter(value => {
               def foo(value: RDFTriple): Boolean = {
-                for (entry <- parentCells) {
+                for (entry <- matchingCells) {
                   if (!value.o.startsWith("\"") && broadcastVariable.value.get(entry).get.contains(value.o.toInt)) {
                     return true
                   }

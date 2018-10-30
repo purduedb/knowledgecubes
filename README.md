@@ -75,8 +75,9 @@ val localPath = "/path/to/local/path"
 val dbPath = "/path/to/db/path"
 val filterType = GEFIType.ROARING // Roaring bitmap
 val falsePositiveRate = 0
+val spatialSupport = true
 
-val queryProcessor = QueryProcessor(spark, dbPath, localPath, filterType, falsePositiveRate)
+val queryProcessor = QueryProcessor(spark, dbPath, localPath, filterType, falsePositiveRate, spatialSupport)
 
 val query =
   """
@@ -96,7 +97,7 @@ val r = queryProcessor.sparql(query)
 
 #### Constructing Filters
 
-Additionaly, KC provides an API for creating additional resources. KC provides exact and approximate structures for filtering data. Currently KC supports ```GEFIType.BLOOM```, ```GEFIType.ROARING```, and ```GEFIType.BITSET```.
+Additionaly, KC provides an API for creating additional filters. KC provides exact and approximate structures for filtering data. Currently KC supports ```GEFIType.BLOOM```, ```GEFIType.ROARING```, and ```GEFIType.BITSET```.
 
 ```scala
 import org.apache.spark.sql.SparkSession
@@ -122,7 +123,7 @@ filter.create(filterType, fp)
 
 KC provides a set of benchmarking classes
 
-* **BenchmarkFilteringCLI:** For benchmarking the query execution when using resources
+* **BenchmarkFilteringCLI:** For benchmarking the query execution when using filters
 * **BenchamrkReductionsCLI:** For benchmarking the query execution when using reductions only
 
     
