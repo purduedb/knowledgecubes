@@ -2,6 +2,8 @@ package edu.purdue.knowledgecubes
 
 import java.io.{File, FileOutputStream, ObjectOutputStream}
 
+import scala.collection.mutable.ListBuffer
+
 import com.typesafe.scalalogging.Logger
 import org.apache.spark.sql.SparkSession
 import org.slf4j.LoggerFactory
@@ -44,11 +46,11 @@ object SemanticFiltersCLI {
     }
 
     val falsePositiveRate = fp.toFloat
-    val maxNumFilters = count.toInt
+    val numElements = count.toInt
 
     if (sType.equals("spatial")) {
       LOG.info("Processing Spatial Data")
-      var encodedPoints = Map[Long, Int]()
+      var encodedPoints = Map[Long, ListBuffer[Int]]()
       if (dataset.equals("yago")) {
         val yago = new YAGOSpatialParser(spark, dbPath, localPath)
         encodedPoints = yago.parseSpatialData()
@@ -56,7 +58,8 @@ object SemanticFiltersCLI {
         LOG.error("Unsupported Dataset")
         System.exit(-1)
       }
-      val filters = SpatialEncoder.createFilters(encodedPoints, maxNumFilters, localPath)
+      LOG.info("Saving Spatial Filters ...")
+      val filters = SpatialEncoder.createFilters(encodedPoints, numElements, localPath)
       val numFilters = save(filters, filterType, falsePositiveRate, localPath, sType)
       LOG.info(s"Number of Spatial Filters created: $numFilters")
     }

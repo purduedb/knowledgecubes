@@ -19,6 +19,7 @@ import edu.purdue.knowledgecubes.rdf.{RDFPropertyIdentifier, RDFTriple}
 import edu.purdue.knowledgecubes.storage.cache.{CacheEntry, CacheManager}
 import edu.purdue.knowledgecubes.storage.cache.CacheEntryType._
 import edu.purdue.knowledgecubes.utils.PrefixHandler
+import edu.purdue.knowledgecubes.GEFI.spatial.SpatialEncoder
 
 
 class Executor(catalog: Catalog) {
@@ -151,10 +152,20 @@ class Executor(catalog: Catalog) {
           spatialVariable = tripleGeom.getSubject.toString()
         }
 
+        LOG.debug(s"Spatial Variable: ${spatialVariable}")
+
         // Determine spatial filters to use
-        val latlngmin = S2CellId.fromLatLng(S2LatLng.fromDegrees(lat_min, lon_min)).id()
-        val latlngmax = S2CellId.fromLatLng(S2LatLng.fromDegrees(lat_max, lon_max)).id()
-        val matchingCells = catalog.spatialIndex.find(latlngmin, latlngmax)
+        val latlngmin: Long = SpatialEncoder.encodeLonLat(lon_min, lat_min)
+        val latlngmax: Long = SpatialEncoder.encodeLonLat(lon_max, lat_max)
+        var begin = latlngmin
+        var end = latlngmax
+        if(latlngmax < latlngmin) {
+          begin = latlngmax
+          end = latlngmin
+        }
+        LOG.debug(s"Range: ${begin} to ${end}")
+        val matchingCells = catalog.spatialIndex.find(begin, end)
+        LOG.debug(s"Matching Cells : ${matchingCells}")
         val broadcastVariable = catalog.broadcastSpatialFilters
         reductionSizes = 0
         for (tp <- bgpTriples) {
@@ -166,7 +177,7 @@ class Executor(catalog: Catalog) {
                     return true
                   }
                 }
-                false
+                return false
               }
               foo(value)
             })
@@ -178,7 +189,7 @@ class Executor(catalog: Catalog) {
                     return true
                   }
                 }
-                false
+                return false
               }
               foo(value)
             })

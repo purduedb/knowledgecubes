@@ -8,26 +8,38 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
+import ch.hsr.geohash.GeoHash
 import com.google.common.geometry._
+import com.typesafe.scalalogging.Logger
 import intervalTree.IntervalTree
 import net.jcazevedo.moultingyaml._
 import net.jcazevedo.moultingyaml.DefaultYamlProtocol._
+import org.slf4j.LoggerFactory
+
+import ch.hsr.geohash.WGS84Point
+
+import edu.purdue.knowledgecubes.QueryCLI.getClass
 
 object SpatialEncoder {
 
+  val LOG = Logger(LoggerFactory.getLogger(getClass))
+
   def encodeLonLat(lon: Double, lat: Double, level: Int): Long = {
-    val lvl = level
     var latlng = S2LatLng.fromDegrees(lat, lon)
     var cell = S2CellId.fromLatLng(latlng)
-    var parentId = cell.parent(lvl).id()
+    var parentId = cell.parent(level).id()
     parentId
   }
 
   def encodeLonLat(lon: Double, lat: Double): Long = {
-    val latlng = S2LatLng.fromDegrees(lat, lon)
-    val id = S2CellId.fromLatLng(latlng).id()
-    id
+    GeoHash.withBitPrecision(lat, lon, 64).longValue()
   }
+
+//  def encodeLonLat(lon: Double, lat: Double): Long = {
+//    val latlng = S2LatLng.fromDegrees(lat, lon)
+//    val id = S2CellId.fromLatLng(latlng).id()
+//    id
+//  }
 
   def encodePoints(list: List[(Double, Double)]): List[Long] = {
     val loop = ListBuffer[S2Point]()
@@ -47,10 +59,11 @@ object SpatialEncoder {
     cells.toList
   }
 
-  def createFilters(encodedPoints: Map[Long, Int], filtersCount: Int, localPath: String): Map[Int, List[Int]] = {
+  def createFilters(encodedPoints: Map[Long, ListBuffer[Int]],
+                    numElements: Int,
+                    localPath: String): Map[Int, List[Int]] = {
     var intervals = mutable.Map[String, Map[String, String]]()
     val sorted = encodedPoints.keySet.toArray.sortWith(_ < _)
-    val numElements = encodedPoints.size / filtersCount
     val bins = sorted.grouped(numElements)
 
     val supp: Supplier[BigInteger] = new Supplier[BigInteger]() {
@@ -61,11 +74,11 @@ object SpatialEncoder {
     val tree = new IntervalTree[BigInteger, Int](supp)
     val filters = mutable.Map[Int, List[Int]]()
     while(bins.hasNext) {
+      val lst = bins.next()
       val intervalInfo = mutable.Map[String, String]()
       counter += 1
-      val lst = bins.next()
       tree.addInterval(BigInteger.valueOf(lst.head), BigInteger.valueOf(lst.last), counter)
-      filters += (counter -> lst.map(x => encodedPoints(x)).toList)
+      filters += (counter -> lst.flatMap(x => encodedPoints(x).toList).toList)
       // Save intervalInfo info for reconstruction
       intervalInfo += ("id" -> counter.toString)
       intervalInfo += ("begin" -> lst.head.toString)
