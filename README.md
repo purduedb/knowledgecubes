@@ -2,8 +2,73 @@
 
 ## About
 
-A Knowledge Cube, or KC for short, is a semantically-guided data management architecture, where data management is influenced by the data semantics rather than by a predefined scheme. KC relies on semantics to define how the data is fetched, organized, stored, optimized, and queried. Knowledge cubes use RDF to store data. This allows knowledge cubes to store Linked Data from the Web of Data. Knowledge cubes are envisioned to break down the centralized architecture into multiple specialized cubes, each having its own index and data store.
+A Knowledge Cube, or KC for short, is a semantically-guided data management architecture, where data semantics influences the data management architecture rather than a predefined scheme. KC relies on semantics to define how the data is fetched, organized, stored, optimized, and queried. Knowledge cubes use RDF to store data. This allows knowledge cubes to store Linked Data from the Web of Data. Knowledge cubes envisions breaking down the centralized architecture into multiple specialized cubes, each having its own index and data store.
 
+## Quick Start Guide
+
+#### Create Encode Data
+
+```bash
+java -cp uber-knowledgecubes-0.1.0.jar:scala-library-2.11.0.jar edu.purdue.knowledgecubes.DictionaryEncoderCLI -i src/main/resources/datasets/original/sample.nt -o /home/amadkour/kclocal/encoded.nt -l /home/amadkour/kclocal -s space
+```
+The ```kclocal``` will contain the created dictionaries, the initial data structure used by the store
+
+#### Create Store
+
+```bash
+spark-submit --master local[*] --class edu.purdue.knowledgecubes.StoreCLI target/uber-knowledgecubes-0.1.0.jar -i /home/amadkour/kclocal/encoded.nt -l /home/amadkour/kclocal -f 0.01 -t roaring -d /home/amadkour/kcdb
+```
+The database ```kcdb``` directory contains the actual data and reductions for the input NT file. The following is the directory structure of the local store:
+
+#### Run Query Workload
+
+```bash
+spark-submit --master local[*] --class edu.purdue.knowledgecubes.BenchmarkReductionsCLI target/uber-knowledgecubes-0.1.0.jar -l /home/amadkour/kclocal -f 0.01 -t roaring -d /home/amadkour/kcdb -q src/main/resources/queries/original
+```
+The command generates the workload reductions under the ```kcdb/reductions/join``` directory. The partitions are saved using parquet format. 
+
+#### Local Store Overview
+
+```
+$ ls
+amadkour@amadkour:~/kclocal$ ls
+GEFI  dbinfo.yaml  dictionary  encoded.nt  join-reductions.yaml  
+results-20200625115017.txt  tables.yaml
+```
+
+* ```GEFI```: directory represents the generalized filters created for the input datasets. 
+* ```dbinfo.yaml```: file lists meta-data about the store datasets. 
+* ```dictionary```: directory containts the string to id mappings created by the dictionary module. 
+* ```join-reductions.yaml```: directory contains metadata about the generated reductions.
+* ```results-20200625115017.txt```: is the output file containing the query performance output when running the benchmarking modules. 
+* ```tables.yaml```: file lists the meta-data about the tables.
+
+#### Database Directory Overview
+
+```
+amadkour@amadkour:~/kcdb$ ls
+data  reductions
+```
+The database contains parquet formatted files that represents the original data and reductions:
+* ```data```: contains the original data created based on the input NT files.
+* ```reductions```: contains the workload-driven reductions created after running a query workload (e.g. after running the Benchmark CLI tool mentioned below). 
+
+Program such as spark-shell can be used to view the parquet file content:
+
+```bash
+scala> var data = spark.read.parquet("/home/amadkour/kcdb/reductions/join/13_TRPO_JOIN_13_TRPS")
+data: org.apache.spark.sql.DataFrame = [s: int, p: int ... 1 more field]
+
+scala> data.show()
++---+---+---+
+|  s|  p|  o|
++---+---+---+
+| 11| 13|  3|
+| 11| 13|  4|
+| 12| 13|  5|
+|  8| 13|  1|
++---+---+---+
+```
 
 ## WORQ: Workload-Driven RDF Query Processing
 
@@ -36,7 +101,7 @@ The command generates a dictionary encoded version of the dataset. This encoded 
 
 #### Store Creation
 
-KC provide the Store class for creation of an RDF store. The input to the store is a spark session, database path where the RDF dataset will be stores, and a local configuration path.
+KC provide the Store class for creation of an RDF store. The input to the store is a spark session, database path where the RDF dataset will be stored, and a local configuration path.
 
 ```scala
 import org.apache.spark.sql.SparkSession

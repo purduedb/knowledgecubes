@@ -22,7 +22,6 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spark.version>2.1.0</spark.version>
-        <jena.version>LATEST</jena.version>
         <scala.version>2.11.12</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
     </properties>
@@ -38,7 +37,7 @@
         <dependency>
             <groupId>com.typesafe.scala-logging</groupId>
             <artifactId>scala-logging_2.11</artifactId>
-            <version>LATEST</version>
+            <version>3.9.2</version>
         </dependency>
 
         <dependency>
@@ -57,7 +56,7 @@
             <groupId>org.apache.jena</groupId>
             <artifactId>apache-jena-libs</artifactId>
             <type>pom</type>
-            <version>${jena.version}</version>
+            <version>3.16.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -114,7 +113,7 @@
         <dependency>
             <groupId>org.roaringbitmap</groupId>
             <artifactId>RoaringBitmap</artifactId>
-            <version>LATEST</version>
+            <version>0.8.9</version>
         </dependency>
 
         <dependency>
@@ -231,7 +230,7 @@
                                     <exclude>commons-logging:commons-logging</exclude>
                                     <exclude>commons-net:commons-net</exclude>
                                     <exclude>io.dropwizard.metrics:metrics*</exclude>
-                                    <exckude>io.netty:netty*</exckude>
+                                    <exclude>io.netty:netty*</exclude>
                                     <exclude>javax.activation:activation</exclude>
                                     <exclude>javax.annotation:javax.annotation-api</exclude>
                                     <exclude>javax.servlet:javax.servlet-api</exclude>
