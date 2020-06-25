@@ -23,6 +23,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spark.version>2.4.0</spark.version>
         <scala.version>2.11.12</scala.version>
+        <roaring.bitmap>0.8.9</roaring.bitmap>
         <scala.binary.version>2.11</scala.binary.version>
     </properties>
 
@@ -113,7 +114,7 @@
         <dependency>
             <groupId>org.roaringbitmap</groupId>
             <artifactId>RoaringBitmap</artifactId>
-            <version>0.8.9</version>
+            <version>${roaring.bitmap}</version>
         </dependency>
 
         <dependency>
