@@ -21,6 +21,10 @@ object BenchmarkReductionsCLI {
   val LOG = Logger(LoggerFactory.getLogger(getClass))
 
   def main(args: Array[String]): Unit = {
+
+    // Main class used for benchamrking a set of queries and saving the resulting partitions to disk.
+    // Parititons are saved using parquet format and can be viewed using, e.g.,  spark-shell.
+
     val params = CliParser.parseExecutor(args)
     val spark = SparkSession.builder
       .appName(s"Benchmark Reductions")

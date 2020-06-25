@@ -23,7 +23,7 @@ object QueryCLI {
   def main(args: Array[String]): Unit = {
     val params = CliParser.parseExecutor(args)
     val spark = SparkSession.builder
-      .appName(s"Knowledge Cubes Query")
+      .appName(s"Knowledge Cubes Query Processor")
       .config("spark.sql.inMemoryColumnarStorage.batchSize", "20000")
       .getOrCreate()
 
