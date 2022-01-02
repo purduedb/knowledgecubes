@@ -205,4 +205,4 @@ KC provides a set of benchmarking classes
 
 If you have any problems running KC please feel free to send an email. 
 
-* Amgad Madkour <amgad@cs.purdue.edu>
+* Amgad Madkour <amgad@alumni.purdue.edu>
